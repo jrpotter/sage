@@ -4,7 +4,6 @@
  * Created by jrpotter (11/26/2015).
  */
 
-#include <cassert>
 #include <memory>
 #include "nfa.h"
 
@@ -22,9 +21,8 @@ using namespace sage;
  * within the range (inclusive).
  */
 NFA::NFA()
-    :start(std::make_shared<Node>())
 {
-
+    start = buildNode();
 }
 
 NFA::NFA(std::string begin)
@@ -34,43 +32,25 @@ NFA::NFA(std::string begin)
 }
 
 NFA::NFA(std::string begin, std::string end)
-    :start(std::make_shared<Node>())
 {
+    start = buildNode();
     auto range = std::make_pair(begin, end);
-    start->edges[range] = std::make_shared<Node>();
-    finished.insert(start->edges[range]);
+    if(auto head = start.lock()) {
+        auto next = buildNode();
+        head->edges[range] = next;
+        finished.insert(next);
+    }
 }
 
 /**
- * Copy Constructor.
+ * Build Node.
+ *
+ * Utility method for constructing a new node.
  */
-NFA::NFA(const NFA& other)
+std::weak_ptr<NFA::Node> NFA::buildNode()
 {
-    assert(false);
-}
-
-/**
- * Move Constructor.
- */
-NFA::NFA(NFA&& other)
-{
-    assert(false);
-}
-
-/**
- * Assignment Operator.
- */
-NFA& NFA::operator= (NFA other)
-{
-    assert(false);
-}
-
-/**
- * Swap Operator.
- */
-void NFA::swap(NFA& a, NFA& b)
-{
-
+    graph.emplace_back(std::make_shared<Node>());
+    return std::weak_ptr<Node>(graph.back());
 }
 
 /**
@@ -82,9 +62,12 @@ void NFA::swap(NFA& a, NFA& b)
 void NFA::concatenate(std::shared_ptr<NFA> tail)
 {
     for(auto node : finished) {
-        node->epsilon.push_back(tail->start);
+        if(auto n_ptr = node.lock()) {
+            n_ptr->epsilon.push_back(tail->start);
+        }
     }
     finished = tail->finished;
+    graph.insert(graph.end(), tail->graph.begin(), tail->graph.end());
 }
 
 /**
@@ -95,9 +78,11 @@ void NFA::concatenate(std::shared_ptr<NFA> tail)
  */
 void NFA::join(std::shared_ptr<NFA> tail)
 {
-    auto head = std::make_shared<Node>();
-    head->epsilon.push_back(tail->start);
-    start = head;
+    auto head = buildNode();
+    if(auto h_ptr = head.lock()) {
+        h_ptr->epsilon.push_back(tail->start);
+        start = head;
+    }
 }
 
 /**
@@ -126,10 +111,14 @@ void NFA::kleeneStar()
  */
 void NFA::kleenePlus()
 {
-    auto head = std::make_shared<Node>();
-    head->epsilon.push_back(start);
-    for(auto node : finished) {
-        node->epsilon.push_back(start);
+    auto head = buildNode();
+    if(auto h_ptr = head.lock()) {
+        h_ptr->epsilon.push_back(start);
+        for(auto node : finished) {
+            if(auto n_ptr = node.lock()) {
+                n_ptr->epsilon.push_back(start);
+            }
+        }
     }
     start = head;
 }
@@ -142,10 +131,15 @@ void NFA::kleenePlus()
  */
 void NFA::makeOptional()
 {
-    auto head = std::make_shared<Node>();
-    head->epsilon.push_back(start);
-    for(auto node : finished) {
-        head->epsilon.push_back(node);
+    auto head = buildNode();
+    if(auto h_ptr = head.lock()) {
+        h_ptr->epsilon.push_back(start);
+        for(auto node : finished) {
+            if(auto n_ptr = node.lock()) {
+                h_ptr->epsilon.push_back(n_ptr);
+            }
+        }
     }
+
     start = head;
 }
