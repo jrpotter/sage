@@ -1,8 +1,9 @@
 #include <iostream>
 
-using namespace std;
+#include "regex.h"
 
 int main() {
-    cout << "Hello, World!" << endl;
+    sage::Regex r = sage::Regex("test");
+    
     return 0;
 }
