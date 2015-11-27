@@ -10,12 +10,14 @@
 #include <memory>
 #include <string>
 
+#include "nfa.h"
+
 namespace sage {
 
     class DFA {
 
         public:
-            DFA();
+            DFA(std::weak_ptr<NFA>);
             DFA(const DFA&);
             DFA(DFA&&);
             DFA& operator= (DFA);

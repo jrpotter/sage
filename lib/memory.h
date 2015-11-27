@@ -1,6 +1,8 @@
-//
-// Created by jrpotter on 11/26/15.
-//
+/**
+ * memory.h
+ *
+ * Created by jrpotter (11/26/2015).
+ */
 
 #ifndef SAGE_MEMORY_H
 #define SAGE_MEMORY_H

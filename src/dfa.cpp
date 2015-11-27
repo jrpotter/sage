@@ -10,8 +10,13 @@ using namespace sage;
 
 /**
  * Constructor.
+ *
+ * This requires breaking up the NFA into powersets based on each
+ * node's epsilon closure. Each closure represents a node in the DFA,
+ * where each edge of each subnode is then an edge in the current
+ * DFA.
  */
-DFA::DFA()
+DFA::DFA(std::weak_ptr<NFA> automaton)
 {
 
 }
