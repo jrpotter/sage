@@ -7,7 +7,6 @@
 #ifndef SAGE_NFA_H
 #define SAGE_NFA_H
 
-#include <sstream>
 #include <string>
 #include <memory>
 #include <vector>
@@ -27,6 +26,8 @@ namespace sage {
      * will join all nodes into its graph.
      */
     class NFA {
+
+        friend class DFA;
 
         public:
             NFA();
@@ -71,6 +72,9 @@ namespace sage {
                 // initially designed so that each character/string would construct a new edge, this proves
                 // much to expensive.
                 std::map<NFA::Range, std::weak_ptr<Node>> edges;
+
+                // Returns a collection of nodes corresponding to the epsilon closure
+                void epsilonClosure(std::set<Node*>&);
 
             };
 

@@ -21,6 +21,7 @@ Regex::Regex(std::string expr)
 {
     std::stringstream ss(expr);
     std::shared_ptr<NFA> nfa = read(ss);
+    automaton = sage::make_unique<DFA>(nfa);
 }
 
 /**

@@ -4,10 +4,28 @@
  * Created by jrpotter (11/26/2015).
  */
 
-#include <memory>
 #include "nfa.h"
 
 using namespace sage;
+
+/**
+ * Epsilon Closure.
+ *
+ * Finds the epsilon closure of a given Node via a DFS
+ * algorithm. The @closure set will be populated with
+ * all values by the end.
+ */
+void NFA::Node::epsilonClosure(std::set<Node*>& closure)
+{
+    if(closure.find(this) != closure.end()) {
+        closure.insert(this);
+        for(auto ptr : epsilon) {
+            if(auto node = ptr.lock()) {
+                node->epsilonClosure(closure);
+            }
+        }
+    }
+}
 
 /**
  * Constructor.

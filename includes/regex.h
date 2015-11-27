@@ -8,6 +8,7 @@
 #define SAGE_REGEX_H
 
 #include <list>
+#include <sstream>
 #include <string>
 #include <memory>
 

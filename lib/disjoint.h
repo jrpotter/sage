@@ -8,7 +8,7 @@
 #define SAGE_DISJOINT_H
 
 #include <map>
-#include <iostream>
+#include <vector>
 #include <exception>
 
 namespace sage {
@@ -25,19 +25,18 @@ namespace sage {
 
         public:
             DisjointSet();
-            ~DisjointSet()=default;
-            DisjointSet(const DisjointSet&);
-            DisjointSet(DisjointSet&&);
-            DisjointSet& operator= (DisjointSet);
-            void swap(DisjointSet&, DisjointSet&);
+            ~DisjointSet() = default;
+            DisjointSet(const DisjointSet &);
+            DisjointSet(DisjointSet &&);
+            DisjointSet &operator=(DisjointSet);
+            void swap(DisjointSet &, DisjointSet &);
 
             // Exception thrown when search conducted for non-existing element
             class NoElementException : public std::exception {
-                public:
-                    virtual const char* what() const throw()
-                    {
-                        return "Could not find element in set";
-                    }
+            public:
+                virtual const char *what() const throw() {
+                    return "Could not find element in set";
+                }
             } noElementException;
 
             // Basic Operations
@@ -45,14 +44,22 @@ namespace sage {
             void join(T, T) throw(NoElementException);
             void createSet(T);
 
-    private:
-        struct Node {
-            int rank;
-            T parent;
-            Node(int rank, T parent);
-        };
+            // Convenience method meant to convert table into an actual table for lookup.
+            // Note this method may perform path compression, but the actual relationships
+            // are maintained nonetheless.
+            //
+            // The map has a key representing a parent and a value representing all nodes
+            // (including the representative) tied to the key.
+            const std::map<T, std::vector<T>> getTable();
 
-        std::map<T, std::shared_ptr<Node>> table;
+        private:
+            struct Node {
+                int rank;
+                T parent;
+                Node(int rank, T parent);
+            };
+
+            std::map<T, std::shared_ptr<Node>> table;
 
     };
 
@@ -61,9 +68,7 @@ namespace sage {
      */
     template<typename T>
     DisjointSet<T>::Node::Node(int rank, T parent)
-                         :rank(rank)
-                         ,parent(parent)
-    {
+            : rank(rank), parent(parent) {
 
     }
 
@@ -71,8 +76,7 @@ namespace sage {
      * Constructor.
      */
     template<typename T>
-    DisjointSet<T>::DisjointSet()
-    {
+    DisjointSet<T>::DisjointSet() {
 
     }
 
@@ -80,9 +84,8 @@ namespace sage {
      * Copy Constructor.
      */
     template<typename T>
-    DisjointSet<T>::DisjointSet(const DisjointSet<T>& other)
-    {
-        for(auto pair : other.table) {
+    DisjointSet<T>::DisjointSet(const DisjointSet<T> &other) {
+        for (auto pair : other.table) {
             table[pair.first] = std::make_shared<Node>(pair.second->rank, pair.second->parent);
         }
     }
@@ -91,9 +94,8 @@ namespace sage {
      * Move Constructor.
      */
     template<typename T>
-    DisjointSet<T>::DisjointSet(DisjointSet<T>&& other)
-                   :table(other.table)
-    {
+    DisjointSet<T>::DisjointSet(DisjointSet<T> &&other)
+            : table(other.table) {
 
     }
 
@@ -101,8 +103,7 @@ namespace sage {
      * Assignment Operator.
      */
     template<typename T>
-    DisjointSet<T>& DisjointSet<T>::operator= (DisjointSet<T> other)
-    {
+    DisjointSet<T> &DisjointSet<T>::operator=(DisjointSet<T> other) {
         swap(*this, other);
         return *this;
     }
@@ -111,8 +112,7 @@ namespace sage {
      * Swap Operator.
      */
     template<typename T>
-    void DisjointSet<T>::swap(DisjointSet<T>& a, DisjointSet<T>& b)
-    {
+    void DisjointSet<T>::swap(DisjointSet<T> &a, DisjointSet<T> &b) {
         using std::swap;
         swap(a.table, b.table);
     }
@@ -124,15 +124,14 @@ namespace sage {
      * proportional to the Ackermann function (when employed with rank comparison).
      */
     template<typename T>
-    T DisjointSet<T>::findSet(T value) throw(NoElementException)
-    {
+    T DisjointSet<T>::findSet(T value) throw(NoElementException) {
         auto it = table.find(value);
-        if(it == table.end()) {
+        if (it == table.end()) {
             throw noElementException;
         }
 
         auto n = it->second;
-        if(value != n->parent) {
+        if (value != n->parent) {
             n->parent = findSet(n->parent);
         }
 
@@ -145,13 +144,12 @@ namespace sage {
      * This basic optimization ensures O(log(n)) runtime.
      */
     template<typename T>
-    void DisjointSet<T>::join(T a, T b) throw(NoElementException)
-    {
+    void DisjointSet<T>::join(T a, T b) throw(NoElementException) {
         T first = findSet(a), second = findSet(b);
 
-        if(table[first]->rank < table[second]->rank) {
+        if (table[first]->rank < table[second]->rank) {
             table[first]->parent = second;
-        } else if(table[first]->rank > table[second]->rank) {
+        } else if (table[first]->rank > table[second]->rank) {
             table[second]->parent = first;
         } else {
             table[first]->parent = second;
@@ -165,10 +163,32 @@ namespace sage {
      * Initial operation to add element into disjoint forest.
      */
     template<typename T>
-    void DisjointSet<T>::createSet(T value)
-    {
-        table[value] = std::make_shared<Node>(1, value);
+    void DisjointSet<T>::createSet(T value) {
+        if(table.find(value) != table.end()) {
+            table[value] = std::make_shared<Node>(1, value);
+        }
     }
+
+    /**
+     * Construct Table.
+     *
+     * Used to determine properties of a given table.
+     */
+    template<typename T>
+    const std::map<T, std::vector<T>> DisjointSet<T>::getTable()
+    {
+        std::map<T, std::vector<T>> mapping;
+        for(auto pair : table) {
+            T parent = findSet(pair.first);
+            if(mapping.find(parent) == mapping.end()) {
+                mapping.emplace(parent, std::vector<T>());
+            }
+            mapping[parent].push_back(pair.first);
+        }
+
+        return mapping;
+    };
+
 }
 
 #endif //SAGE_DISJOINT_H
