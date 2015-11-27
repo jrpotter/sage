@@ -8,8 +8,12 @@
 #define SAGE_MEMORY_H
 
 #include <memory>
+#include <set>
 
 namespace sage {
+
+    template<typename T>
+    using weak_set = std::set<std::weak_ptr<T>, std::owner_less<std::weak_ptr<T>>>;
 
     template<typename T, typename... Args>
     std::unique_ptr<T> make_unique(Args&&... args)

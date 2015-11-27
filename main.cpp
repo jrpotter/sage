@@ -1,11 +1,15 @@
 #include <iostream>
+#include <memory>
+#include <map>
+#include <set>
 
-#include "regex.h"
 #include "disjoint.h"
 
-int main() {
-    sage::Regex("a*b|cde+");
+using namespace std;
+using namespace sage;
 
+int main() {
     
+
     return 0;
 }

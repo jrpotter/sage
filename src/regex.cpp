@@ -91,10 +91,10 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss)
                 next = readRange(ss);
                 break;
             case '\\':
-                next = std::make_shared<NFA>(std::string(1u, ss.get()));
+                next = std::make_shared<NFA>(ss.get());
                 break;
             default:
-                next = std::make_shared<NFA>(std::string(1u, c));
+                next = std::make_shared<NFA>(c);
                 break;
         }
 
@@ -150,25 +150,8 @@ std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss)
     // allows chaining of hyphenated values (e.g. 100-300-500) but this
     // functionality is maintained for simplicity sake.
     // TODO: Raise syntactic error for chaining
-    std::vector<std::string> range(2);
-    range.emplace_back(std::string());
 
-    // Process input
-    char c;
-    while(ss.get(c) && c != ']') {
-        switch(c) {
-            case '-':
-                range.emplace_back(std::string());
-                break;
-            case '\\':
-                range.back().append(1u, ss.get());
-                break;
-            default:
-                range.back().append(1u, c);
-                break;
-        }
-    }
 
     // Build ranged NFA
-    return std::make_shared<NFA>(range.front(), range.back());
+    return std::make_shared<NFA>('a', 'b');
 }
