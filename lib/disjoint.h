@@ -68,7 +68,8 @@ namespace sage
         private:
 
             // Represents the tree node in the disjoint forest
-            struct Node {
+            struct Node
+            {
                 int rank;
                 T parent;
                 Node(int rank, T parent);
