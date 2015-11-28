@@ -9,6 +9,26 @@
 using namespace sage;
 
 /**
+ * Exception Constructor
+ * ================================
+ */
+InvalidRegularExpression::InvalidRegularExpression(std::string message, long index)
+    : message(message), index(index)
+{ }
+
+/**
+ * Exception Message
+ * ================================
+ */
+virtual const char* InvalidRegularExpression::what() const
+{
+    std::stringstream ss(message);
+    ss << " at position " << index << std::endl;
+
+    return ss.str().c_str();
+}
+
+/**
  * Constructor
  * ================================
  *
@@ -24,7 +44,6 @@ Regex::Regex(std::string expr)
     automaton = sage::make_unique<DFA>(nfa);
 }
 
-
 /**
  * Copy Constructor
  * ================================
@@ -32,7 +51,6 @@ Regex::Regex(std::string expr)
 Regex::Regex(const Regex& other)
     :expr(other.expr)
 { }
-
 
 /**
  * Move Constructor
@@ -42,7 +60,6 @@ Regex::Regex(Regex&& other)
 {
     swap(*this, other);
 }
-
 
 /**
  * Assignment Operator
@@ -54,7 +71,6 @@ Regex& Regex::operator= (Regex other)
     return *this;
 }
 
-
 /**
  * Swap Operator
  * ================================
@@ -65,7 +81,6 @@ void Regex::swap(Regex& a, Regex &b)
     swap(a.expr, b.expr);
     swap(a.automaton, b.automaton);
 }
-
 
 /**
  * Find
@@ -82,7 +97,6 @@ int Regex::find(std::string search)
         }
     }
 }
-
 
 /**
  * Matches
@@ -101,7 +115,6 @@ bool Regex::matches(std::string search, int index)
     return automaton->final();
 }
 
-
 /**
  * Collapse NFAs
  * ================================
@@ -110,7 +123,7 @@ bool Regex::matches(std::string search, int index)
  * too deep of a epsilon tree. That is, we are trying to balance
  * out the number of epsilon edges as much as possible
  */
-std::shared_ptr<NFA> Regex::collapseNFAs(std::list<std::shared_ptr<NFA>>& components)
+const std::shared_ptr<NFA> Regex::collapseNFAs(std::list<std::shared_ptr<NFA>>& components) const
 {
     while(components.size() > 1) {
         auto first = components.front();
@@ -124,7 +137,6 @@ std::shared_ptr<NFA> Regex::collapseNFAs(std::list<std::shared_ptr<NFA>>& compon
     return components.front();
 }
 
-
 /**
  * Begin building an NFA
  * ================================
@@ -133,13 +145,18 @@ std::shared_ptr<NFA> Regex::collapseNFAs(std::list<std::shared_ptr<NFA>>& compon
  * build the corresponding NFA. We build up the NFA in parts
  * (as indicated by '|') to then be joined together.
  */
-std::shared_ptr<NFA> Regex::read(std::stringstream& ss)
+std::shared_ptr<NFA> Regex::read(std::stringstream& ss) const
 {
     // Start the NFA to be built
+    // This will continue to be expanded as '|'s are encountered
     std::list<std::shared_ptr<NFA>> components;
     components.emplace_back(std::make_shared<NFA>());
 
     // Begin processing input
+    // Note that an empty regex is not considered an error. Rather
+    // it is the regex that matches the empty string. Nonetheless,
+    // caution must be taken when using this (if this is something
+    // one would ever use...)
     char c;
     while(ss.get(c) && c != ')') {
 
@@ -186,9 +203,15 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss)
         }
     }
 
+    // If we finished reading in input even though there is still more to
+    // read on the stream, we must have encountered an extra ')' and need
+    // to report the error
+    if(ss.peek() != EOF) {
+        throw InvalidRegularExpression("Encountered extra ')' character", ss.tellg());
+    }
+
     return collapseNFAs(components);
 }
-
 
 /**
  * Reads in Range.
@@ -199,7 +222,7 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss)
  * If one would like, they could specify something like [ab-ae] to represent
  * 'ab', 'ac', 'ad', and 'ae'.
  */
-std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss)
+std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss) const
 {
     std::list<std::shared_ptr<NFA>> components;
     components.emplace_back(std::make_shared<NFA>());
