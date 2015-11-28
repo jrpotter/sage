@@ -30,7 +30,7 @@ NFA::NFA(char begin, char end)
         if(auto next_ptr = next.lock()) {
             finished.insert(next);
             next_ptr->finish = true;
-            start_ptr->edges[range] = next;
+            start_ptr->edges.insert(begin, end, next);
         }
     }
 }

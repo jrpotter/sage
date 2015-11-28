@@ -18,6 +18,7 @@
 #include <memory>
 
 #include "memory.h"
+#include "interval.h"
 
 namespace sage
 {
@@ -28,9 +29,6 @@ namespace sage
             virtual ~Automaton()=0;
 
         protected:
-
-            // Used to represent a range of values (ends inclusive)
-            typedef std::pair<char, char> Range;
 
             // Represents an element in the FA
             // Note we use weak pointers internally since cycles can crop up
@@ -49,7 +47,7 @@ namespace sage
                     // @ranges represent edges that allow for multiple characters to traverse said edge. Though
                     // initially designed so that each character/string would construct a new edge, this proves
                     // much to expensive.
-                    std::map<Range, std::weak_ptr<Node>> edges;
+                    IntervalTree<char, std::weak_ptr<Node>> edges;
 
                     // Returns a collection of nodes corresponding to the epsilon closure
                     weak_set<Node> epsilonClosure();

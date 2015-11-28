@@ -13,7 +13,11 @@
 using namespace sage;
 
 /**
- * Constructor.
+ * Constructor
+ * ================================
+ *
+ * Constructs an NFA out of the given expression, and then converts it to a DFA
+ * which is stored for later matching.
  */
 Regex::Regex(std::string expr)
     :expr(expr)
@@ -24,25 +28,29 @@ Regex::Regex(std::string expr)
     automaton = sage::make_unique<DFA>(nfa);
 }
 
+
 /**
- * Copy Constructor.
+ * Copy Constructor
+ * ================================
  */
 Regex::Regex(const Regex& other)
     :expr(other.expr)
-{
+{ }
 
-}
 
 /**
- * Move Constructor.
+ * Move Constructor
+ * ================================
  */
 Regex::Regex(Regex&& other)
 {
     swap(*this, other);
 }
 
+
 /**
- * Assignment Operator.
+ * Assignment Operator
+ * ================================
  */
 Regex& Regex::operator= (Regex other)
 {
@@ -50,8 +58,10 @@ Regex& Regex::operator= (Regex other)
     return *this;
 }
 
+
 /**
- * Swap Operator.
+ * Swap Operator
+ * ================================
  */
 void Regex::swap(Regex& a, Regex &b)
 {
@@ -60,8 +70,33 @@ void Regex::swap(Regex& a, Regex &b)
     swap(a.automaton, b.automaton);
 }
 
+
 /**
- * Begin building an NFA.
+ * Collapse NFAs
+ * ================================
+ *
+ * Note we push back after polling the front so as not to create
+ * too deep of a epsilon tree. That is, we are trying to balance
+ * out the number of epsilon edges as much as possible
+ */
+std::shared_ptr<NFA> Regex::collapseNFAs(std::list<std::shared_ptr<NFA>>& components)
+{
+    while(components.size() > 1) {
+        auto first = components.front();
+        components.pop_front();
+        auto second = components.front();
+        components.pop_front();
+        first->join(second);
+        components.push_back(first);
+    }
+
+    return components.front();
+}
+
+
+/**
+ * Begin building an NFA
+ * ================================
  *
  * This function will parse in the stream of characters and
  * build the corresponding NFA. We build up the NFA in parts
@@ -120,24 +155,13 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss)
         }
     }
 
-    // Join all NFAs together
-    // Note we push back after polling the front so as not to create
-    // too deep of a epsilon tree. That is, we are trying to balance
-    // out the number of epsilon edges as much as possible.
-    while(components.size() > 1) {
-        auto first = components.front();
-        components.pop_front();
-        auto second = components.front();
-        components.pop_front();
-        first->join(second);
-        components.push_back(first);
-    }
-
-    return components.front();
+    return collapseNFAs(components);
 }
+
 
 /**
  * Reads in Range.
+ * ================================
  *
  * The following will construct a series of options as specified by the
  * range provided. Note this does not require just a single character.
@@ -146,12 +170,22 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss)
  */
 std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss)
 {
-    // Build range together. Note the following implementation technically
-    // allows chaining of hyphenated values (e.g. 100-300-500) but this
-    // functionality is maintained for simplicity sake.
-    // TODO: Raise syntactic error for chaining
+    std::list<std::shared_ptr<NFA>> components;
+    components.emplace_back(std::make_shared<NFA>());
 
+    // Build range together. Note any values not hyphenated across
+    // are optional values. That is, they may instead be used to
+    // represent the sub-NFA. For example, [15-8a] means either
+    // '1', '5', '6', '7', '8', or 'a' matches the given NFA
+    char begin;
+    while(ss.get(begin) && begin != ']') {
+        if(ss.peek() == '-') {
+            char end; ss.get(); ss.get(end);
+            components.emplace_back(std::make_shared<NFA>(begin, end));
+        } else {
+            components.emplace_back(std::make_shared<NFA>(begin));
+        }
+    }
 
-    // Build ranged NFA
-    return std::make_shared<NFA>('a', 'b');
+    return collapseNFAs(components);
 }

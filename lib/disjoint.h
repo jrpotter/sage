@@ -5,6 +5,10 @@
  * back to the parent node as the representative of the set. The following performs
  * both rank comparison and path compression for quick access times.
  *
+ * Note this implementation could be improved by allowing more instant access with
+ * an iterator. But as it stands, it is not really necessary to be able to start
+ * from a node besides the start or end.
+ *
  * Created by jrpotter (11/26/2015).
  */
 
@@ -28,14 +32,6 @@ namespace sage
 
         public:
 
-            // Constructors
-            DisjointSet() = default;
-            ~DisjointSet() = default;
-            DisjointSet(const DisjointSet&);
-            DisjointSet(DisjointSet&&);
-            DisjointSet& operator=(DisjointSet);
-            void swap(DisjointSet&, DisjointSet&);
-
             // Iterator
             class iterator
             {
@@ -55,6 +51,14 @@ namespace sage
                     DisjointSet* set;
                     typename forest_t::iterator it;
             };
+
+            // Constructors
+            DisjointSet() = default;
+            ~DisjointSet() = default;
+            DisjointSet(const DisjointSet&);
+            DisjointSet(DisjointSet&&);
+            DisjointSet& operator=(DisjointSet);
+            void swap(DisjointSet&, DisjointSet&);
 
             // Iterator Operations
             iterator begin();

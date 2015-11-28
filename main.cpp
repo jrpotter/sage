@@ -4,6 +4,7 @@
 #include <set>
 
 #include "disjoint.h"
+#include "interval.h"
 
 using namespace std;
 using namespace sage;

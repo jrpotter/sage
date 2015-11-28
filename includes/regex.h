@@ -36,6 +36,9 @@ namespace sage {
 
             // Reads in a range of characters (i.e. [-])
             std::shared_ptr<NFA> readRange(std::stringstream&);
+
+            // Utility method to combine NFAs together
+            std::shared_ptr<NFA> collapseNFAs(std::list<std::shared_ptr<NFA>>&);
     };
 
 }
