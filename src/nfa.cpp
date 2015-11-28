@@ -9,7 +9,23 @@
 using namespace sage;
 
 /**
- * NFA Constructor
+ * NFA Constructor (Empty)
+ * ================================
+ *
+ * If no character is passed into the NFA, we have have an empty NFA that
+ * will match the empty string. This is useful in the case of actual empty
+ * strings or as a starting NFA to begin building from.
+ */
+NFA::NFA()
+{
+    if(auto start_ptr = start.lock()) {
+        start_ptr->finish = true;
+        finished.insert(start);
+    }
+}
+
+/**
+ * NFA Constructor (Two Element)
  * ================================
  *
  * The following builds a single starting node that connects to a single
@@ -18,13 +34,10 @@ using namespace sage;
  */
 NFA::NFA(char c)
     :NFA(c, c)
-{
-
-}
+{ }
 
 NFA::NFA(char begin, char end)
 {
-    auto range = std::make_pair(begin, end);
     if(auto start_ptr = start.lock()) {
         auto next = buildNode();
         if(auto next_ptr = next.lock()) {
@@ -35,6 +48,24 @@ NFA::NFA(char begin, char end)
     }
 }
 
+/**
+ * Join
+ * ================================
+ *
+ * Makes @tail immediately accessible from the head. This should generally be
+ * called by an empty NFA when allowing different options down a regex chain.
+ */
+void NFA::join(std::shared_ptr<NFA> tail)
+{
+    auto head = buildNode();
+    if(auto h_ptr = head.lock()) {
+        h_ptr->epsilon.push_back(tail->start);
+        h_ptr->epsilon.push_back(start);
+        start = h_ptr;
+    }
+    finished.insert(tail->finished.begin(), tail->finished.end());
+    graph.insert(graph.end(), tail->graph.begin(), tail->graph.end());
+}
 
 /**
  * Concatenation.
@@ -47,26 +78,12 @@ void NFA::concatenate(std::shared_ptr<NFA> tail)
 {
     for(auto node : finished) {
         if(auto n_ptr = node.lock()) {
+            n_ptr->finish = false;
             n_ptr->epsilon.push_back(tail->start);
         }
     }
     finished = tail->finished;
     graph.insert(graph.end(), tail->graph.begin(), tail->graph.end());
-}
-
-/**
- * Union.
- *
- * Makes @tail immediately accessible from the head. This should generally be
- * called by an empty NFA when allowing different options down a regex chain.
- */
-void NFA::join(std::shared_ptr<NFA> tail)
-{
-    auto head = buildNode();
-    if(auto h_ptr = head.lock()) {
-        h_ptr->epsilon.push_back(tail->start);
-        start = head;
-    }
 }
 
 /**
@@ -84,8 +101,11 @@ void NFA::join(std::shared_ptr<NFA> tail)
  */
 void NFA::kleeneStar()
 {
-    kleenePlus();
-    finished.insert(start);
+    if(auto s_ptr = start.lock()) {
+        kleenePlus();
+        s_ptr->finish = true;
+        finished.insert(start);
+    }
 }
 
 /**

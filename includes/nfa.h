@@ -1,6 +1,16 @@
 /**
  * nfa.h
  *
+ * Nondeterministic finite automata constructed via Thompson's algorithm.
+ * Larger NFAs should be composed by smaller ones via concatenations or
+ * joining. By constructing epsilon edges between nodes, one can eventually
+ * create a supernode of all nodes reachable by a single node (i.e. the
+ * epsilon closure).
+ *
+ * This class should not be manipulated directly; the @Regex class composes
+ * one manually (via the aforementioned compositions) and passes it to a
+ * DFA for construction.
+ *
  * Created by jrpotter (11/26/2015).
  */
 
@@ -10,24 +20,26 @@
 #include "automaton.h"
 #include "memory.h"
 
-namespace sage {
-
-    class NFA : public Automaton {
-
+namespace sage
+{
+    class NFA : public Automaton
+    {
         friend class DFA;
 
         public:
-            NFA()=default;
+
+            // Constructors
+            NFA();
             NFA(char);
             NFA(char, char);
-
-            // Concatenation
-            // Join two NFAs together.
-            void concatenate(std::shared_ptr<NFA>);
 
             // Union.
             // Sets up target NFA as immediately accessible.
             void join(std::shared_ptr<NFA>);
+
+            // Concatenation
+            // Join two NFAs together.
+            void concatenate(std::shared_ptr<NFA>);
 
             // Operator '*'
             // The Kleene star operation means the previous character needs to be repeated 0 or more times.
@@ -48,9 +60,7 @@ namespace sage {
             // instead add it to our given set. This allows for quick construction from
             // multiple NFAs.
             weak_set<Node> finished;
-
     };
-
 }
 
 #endif //SAGE_NFA_H

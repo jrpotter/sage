@@ -24,7 +24,6 @@
 #define SAGE_INTERVAL_H
 
 #include <functional>
-#include <cassert>
 #include <memory>
 
 namespace sage
@@ -55,16 +54,14 @@ namespace sage
                     std::shared_ptr<Node> current;
             };
 
-            // Constructors
-            IntervalTree();
-            ~IntervalTree() = default;
-
             // Iterator Methods
             iterator begin();
             iterator end();
 
+            // Constructors
+            IntervalTree();
+
             // Default Operation
-            void remove(K, K, C = C());
             void insert(K, K, V, C = C());
             iterator find(K, K, C = C());
 
@@ -74,10 +71,12 @@ namespace sage
 
                 // Data
                 V value;
-                bool red;
                 std::pair<K, K> bounds;
 
-                // This allows correct navigation throughout the tree
+                // Member variables related to invariants of tree.
+                // Note the max_upper_bound is used for proper insertion/searching
+                // and is required to force order when travesing the tree.
+                bool red;
                 K max_upper_bound;
 
                 // Pointers
@@ -107,7 +106,6 @@ namespace sage
             void rlRotate(std::shared_ptr<Node>);
     };
 
-
     /**
      * Iterator Constructor
      * ================================
@@ -116,7 +114,6 @@ namespace sage
     IntervalTree<K, V, C>::iterator::iterator(std::shared_ptr<Node> current)
         : current(current)
     { }
-
 
     /**
      * Iterator Infix Operations
@@ -142,7 +139,6 @@ namespace sage
         return tmp;
     }
 
-
     /**
      * Iterator Reference Operators
      * ================================
@@ -165,7 +161,6 @@ namespace sage
         return current->bounds;
     }
 
-
     /**
      * Iterator Equality Operators
      * ================================
@@ -181,7 +176,6 @@ namespace sage
     {
         return current.owner_before(other.current) || other.current.owner_before(current);
     }
-
 
     /**
      * Node Constructor
@@ -199,7 +193,6 @@ namespace sage
             p->updateMaximum();
         }
     }
-
 
     /**
      * Node Maximum Update
@@ -225,7 +218,6 @@ namespace sage
             }
         }
     }
-
 
     /**
      * Node Successor Value
@@ -254,7 +246,6 @@ namespace sage
         return std::weak_ptr<Node>(p);
     }
 
-
     /**
      * Constructor
      * ================================
@@ -263,7 +254,6 @@ namespace sage
     IntervalTree<K, V, C>::IntervalTree()
         : root(std::shared_ptr<Node>())
     { }
-
 
     /**
      * Iterator Methods
@@ -290,23 +280,6 @@ namespace sage
     {
         return iterator(std::shared_ptr<Node>());
     }
-
-
-    /**
-     * Remove
-     * ================================
-     *
-     * Removes the node matching the given interval exactly.
-     *
-     * Runs in O(log(n)) time.
-     */
-    template<typename K, typename V, typename C>
-    void IntervalTree<K, V, C>::remove(K lower_bound, K upper_bound, C compare)
-    {
-        // TODO
-        assert(false);
-    }
-
 
     /**
      * Insert
@@ -353,7 +326,6 @@ namespace sage
         root->red = false;
     }
 
-
     /**
      * Insert Fixup
      * ================================
@@ -397,9 +369,7 @@ namespace sage
                 current->red = false;
             }
         }
-
     }
-
 
     /**
      * Find
@@ -428,7 +398,6 @@ namespace sage
 
         return end();
     }
-
 
     /**
      * Rotation Methods

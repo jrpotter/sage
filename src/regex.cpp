@@ -4,10 +4,6 @@
  * Created by jrpotter (11/26/2015).
  */
 
-#include <algorithm>
-#include <memory>
-
-#include "memory.h"
 #include "regex.h"
 
 using namespace sage;
@@ -68,6 +64,41 @@ void Regex::swap(Regex& a, Regex &b)
     using std::swap;
     swap(a.expr, b.expr);
     swap(a.automaton, b.automaton);
+}
+
+
+/**
+ * Find
+ * ================================
+ *
+ * Returns the index of the string in which the substring starting
+ * at the specified index matches.
+ */
+int Regex::find(std::string search)
+{
+    for(int i = 0; i < search.size(); i++) {
+        if(matches(search, i)) {
+            return i;
+        }
+    }
+}
+
+
+/**
+ * Matches
+ * ================================
+ *
+ * Determines if the string at the given index matches correctly.
+ */
+bool Regex::matches(std::string search, int index)
+{
+    automaton->reset();
+    for(int i = index; i < search.size(); i++) {
+        if(!automaton->traverse(search[i])) {
+            return false;
+        }
+    }
+    return automaton->final();
 }
 
 

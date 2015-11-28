@@ -1,6 +1,10 @@
 /**
  * memory.h
  *
+ * Utility header provided to fulfill the deficiencies of the C++11 standard.
+ * Note some of these are fixed in C++14, but the compiler I'm currently using
+ * does not provide support yet.
+ *
  * Created by jrpotter (11/26/2015).
  */
 

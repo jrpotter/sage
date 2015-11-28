@@ -38,12 +38,13 @@ DFA::DFA(std::shared_ptr<NFA> automaton)
         auto repr = s_components.findSet(node);
         if(repr == s_components.end()) {
 
-            // Group epsilon closure together
+            // Group epsilon closure together. Note multiple epsilon edges may exist
+            // towards a given point so we check for existence in each of these
             s_components.createSet(node);
             auto e_closure = node->epsilonClosure();
             for(auto component : e_closure) {
                 auto c = component.lock();
-                if(c && c != node) {
+                if(c && s_components.findSet(c) == s_components.end()) {
                     s_components.createSet(c);
                     s_components.join(c, node);
                 }
@@ -53,6 +54,7 @@ DFA::DFA(std::shared_ptr<NFA> automaton)
             auto parent = *s_components.findSet(node);
             powersets[parent] = e_closure;
             indices[parent] = indices.size();
+
         }
     }
 
@@ -64,6 +66,7 @@ DFA::DFA(std::shared_ptr<NFA> automaton)
     }
 
     // Lastly we link all nodes together using the disjoint set information and index information
+    auto nfa_start = automaton->start.lock();
     for(auto ps : powersets) {
 
         // This is the node we are currently building edges from. This is found by
@@ -73,6 +76,13 @@ DFA::DFA(std::shared_ptr<NFA> automaton)
         auto current = graph[indices[ps.first]];
         for(auto node : ps.second) {
             if(auto n_lock = node.lock()) {
+
+                // Mark node as a finishing node
+                // and determine the starting node (should only be one)
+                current->finish = current-> finish || n_lock->finish;
+                if(n_lock == nfa_start) {
+                    start = current;
+                }
 
                 // Iterate through the edges of each node in the powerset and
                 // find the corresponding nodes we should be connecting to
@@ -86,45 +96,51 @@ DFA::DFA(std::shared_ptr<NFA> automaton)
             }
         }
     }
-}
-
-
-/**
- * Copy Constructor
- * ================================
- */
-DFA::DFA(const DFA& other)
-{
 
 }
 
-
 /**
- * Move Constructor
+ * Reset
  * ================================
+ *
+ * Needs to be called after each traversal to ensure we are beginning
+ * at the start of the state machine.
  */
-DFA::DFA(DFA&& other)
+void DFA::reset()
 {
-
+    cursor = start;
 }
 
-
 /**
- * Assignment Operator
+ * Final
  * ================================
+ *
+ * Utility method to see if the current cursor is on a final state.
  */
-DFA& DFA::operator= (DFA other)
+bool DFA::final()
 {
-    swap(*this, other);
-    return *this;
+    if(auto c = cursor.lock()) {
+        return c->finish;
+    }
+    return false;
 }
 
-
 /**
- * Swap Operator
+ * Traverse
  * ================================
- */
-void DFA::swap(DFA& a, DFA& b)
+ *
+ * Attempts to move further along the DFA, returning false if not possible and
+ * true otherwise.
+*/
+bool DFA::traverse(char input)
 {
-    using std::swap;
+    if(auto c = cursor.lock()) {
+        auto it = c->edges.find(input, input);
+        if(it != c->edges.end()) {
+            cursor = *it;
+            return true;
+        }
+    }
+
+    return false;
 }

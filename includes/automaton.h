@@ -2,7 +2,7 @@
  * automaton.h
  *
  * The following is the base class for both the NFA (nondeterministic) and DFA (deterministic).
- * Both of these are used by the @regex.h class to convert a regular expression into a state
+ * Both of these are used by the @Regex class to convert a regular expression into a state
  * machine to be traversed.
  *
  * Created by jrpotter (11/27/2015).
@@ -25,6 +25,8 @@ namespace sage
     class Automaton
     {
         public:
+
+            // Constructors
             Automaton();
             virtual ~Automaton()=0;
 
@@ -38,6 +40,9 @@ namespace sage
                 public:
 
                     // An indicator that this node is a finishing node
+                    // Because NFAs are built repeatedly from nodes, and DFAs are built
+                    // directly from NFAs, we mark nodes as not finished initially, and then
+                    // modify this property as we continue on
                     bool finish = false;
 
                     // @epsilon refers to neighbor edges that can be reached for "free." That is, there is no
@@ -72,9 +77,7 @@ namespace sage
 
             // Utility method to construct node
             std::weak_ptr<Node> buildNode();
-
     };
-
 }
 
 #endif //SAGE_AUTOMATON_H

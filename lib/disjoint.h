@@ -16,6 +16,7 @@
 #define SAGE_DISJOINT_H
 
 #include <functional>
+#include <memory>
 #include <vector>
 #include <map>
 #include <set>
@@ -78,7 +79,6 @@ namespace sage
             std::map<T, std::shared_ptr<Node>, C> table;
     };
 
-
     /**
      * Iterator Constructor
      * ================================
@@ -92,7 +92,6 @@ namespace sage
     DisjointSet<T, C>::iterator::iterator(T value)
             : value(std::make_shared<T>(value))
     { }
-
 
     /**
      * Iterator Reference Operators
@@ -110,7 +109,6 @@ namespace sage
         return value.get();
     }
 
-
     /**
      * Iterator Equality Operators
      * ================================
@@ -127,7 +125,6 @@ namespace sage
         return value != other.value;
     }
 
-
     /**
      * Node Constructor
      * ================================
@@ -136,7 +133,6 @@ namespace sage
     DisjointSet<T, C>::Node::Node(int rank, T parent)
             : rank(rank), parent(parent)
     { }
-
 
     /**
      * Copy Constructor
@@ -150,7 +146,6 @@ namespace sage
         }
     }
 
-
     /**
      * Move Constructor
      * ================================
@@ -159,7 +154,6 @@ namespace sage
     DisjointSet<T, C>::DisjointSet(DisjointSet<T, C>&& other)
             : table(other.table)
     { }
-
 
     /**
      * Assignment Operator
@@ -172,7 +166,6 @@ namespace sage
         return *this;
     }
 
-
     /**
      * Swap Operator
      * ================================
@@ -184,7 +177,6 @@ namespace sage
         swap(a.table, b.table);
     }
 
-
     /**
      * Iterator Operations
      * ================================
@@ -194,7 +186,6 @@ namespace sage
     {
         return iterator();
     }
-
 
     /**
      * Find Set
@@ -214,7 +205,6 @@ namespace sage
         }
         return iterator(it->second->parent);
     }
-
 
     /**
      * Rank Comparison
@@ -247,7 +237,6 @@ namespace sage
             }
         }
     }
-
 
     /**
      * Create Set.

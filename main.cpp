@@ -1,16 +1,14 @@
 #include <iostream>
-#include <memory>
-#include <map>
-#include <set>
 
-#include "disjoint.h"
-#include "interval.h"
+#include "regex.h"
 
 using namespace std;
 using namespace sage;
 
 int main() {
 
+    Regex r("a(b|c)*");
+    cout << r.matches("acbcbe", 0) << endl;
 
     return 0;
 }

@@ -17,11 +17,9 @@ using namespace sage;
  */
 weak_set<Automaton::Node> Automaton::Node::epsilonClosure() const
 {
+    // We are guaranteed the first element refers to the current node
     weak_set<Node> closure;
-    closure.insert(epsilon.begin(), epsilon.end());
-    for(auto node : closure) {
-        epsilonClosure(node, closure);
-    }
+    epsilonClosure(epsilon[0], closure);
     return closure;
 }
 
@@ -37,7 +35,6 @@ void Automaton::Node::epsilonClosure(std::weak_ptr<Node> n, weak_set<Node>& clos
     }
 }
 
-
 /**
  * Automaton Constructor.
  * ================================
@@ -50,7 +47,6 @@ Automaton::Automaton()
     start = buildNode();
 }
 
-
 /**
  * Automaton Destructor
  * ================================
@@ -58,10 +54,7 @@ Automaton::Automaton()
  * Provided to force abstraction of the class.
  */
 Automaton::~Automaton()
-{
-
-}
-
+{ }
 
 /**
  * Automaton Node Building
@@ -69,7 +62,7 @@ Automaton::~Automaton()
  *
  * Must always maintain a list of all nodes but without allowing
  * cyclic shared references amongst the nodes. A vector of all the
- * nodes and weak pointer references amonst the nodes was the settled
+ * nodes and weak pointer references amongst the nodes was the settled
  * compromise.
  *
  * Note also that the epsilon closure of every node includes the element itself.
