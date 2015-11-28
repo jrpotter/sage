@@ -50,12 +50,12 @@ namespace sage
                     IntervalTree<char, std::weak_ptr<Node>> edges;
 
                     // Returns a collection of nodes corresponding to the epsilon closure
-                    weak_set<Node> epsilonClosure();
+                    weak_set<Node> epsilonClosure() const;
 
                 private:
 
                     // Useful wrapper to actually populate the given set correctly
-                    void epsilonClosure(std::weak_ptr<Node>, weak_set<Node>&);
+                    void epsilonClosure(std::weak_ptr<Node>, weak_set<Node>&) const;
 
             };
 

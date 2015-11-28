@@ -15,41 +15,36 @@
 #ifndef SAGE_DISJOINT_H
 #define SAGE_DISJOINT_H
 
-#include <iostream>
+#include <functional>
+#include <vector>
 #include <map>
 #include <set>
-#include <vector>
-#include <exception>
 
 namespace sage
 {
-    template<typename T>
+    template<typename T, typename C = std::less<T>>
     class DisjointSet
     {
         struct Node;
-        typedef std::map<T, std::shared_ptr<Node>> pair_t;
-        typedef std::map<T, std::set<std::shared_ptr<Node>>> forest_t;
 
         public:
 
             // Iterator
+            // Merely serves as a wrapper/marker for elements
+            // For this reason there is only an @end() method
+            // and not a @begin()
             class iterator
             {
                 public:
-                    iterator(DisjointSet*);
-                    iterator(DisjointSet*, typename forest_t::iterator);
-                    iterator operator++();
-                    iterator operator++(int);
-                    const long operator-(const iterator&) const;
-                    const T operator*();
+                    iterator();
+                    iterator(T);
+                    const T& operator*();
                     const T* operator->();
                     const bool operator==(const iterator&);
                     const bool operator!=(const iterator&);
 
                 private:
-                    long index;
-                    DisjointSet* set;
-                    typename forest_t::iterator it;
+                    std::shared_ptr<T> value;
             };
 
             // Constructors
@@ -61,7 +56,6 @@ namespace sage
             void swap(DisjointSet&, DisjointSet&);
 
             // Iterator Operations
-            iterator begin();
             iterator end();
 
             // Basic Operations
@@ -81,11 +75,7 @@ namespace sage
 
             // The following pair maps every entry to its corresponding node.
             // This allows for quick finding of sets.
-            pair_t table;
-
-            // Mapping between each element and the means of determining
-            // the representative of the passed element
-            forest_t reprs;
+            std::map<T, std::shared_ptr<Node>, C> table;
     };
 
 
@@ -93,76 +83,31 @@ namespace sage
      * Iterator Constructor
      * ================================
      */
-    template<typename T>
-    DisjointSet<T>::iterator::iterator(DisjointSet* set)
-            : index(0), set(set), it(set->reprs.begin())
+    template<typename T, typename C>
+    DisjointSet<T, C>::iterator::iterator()
+            : value(std::shared_ptr<T>())
     { }
 
-    template<typename T>
-    DisjointSet<T>::iterator::iterator(DisjointSet* set, typename forest_t::iterator itr)
-            : set(set)
-    {
-        if(itr == set->reprs.end()) {
-            index = set->reprs.size();
-            it = itr;
-        } else {
-            index = 0;
-            for(it = set->reprs.begin(); it != itr; it++, index++) { }
-        }
-    }
-
-
-    /**
-     * Iterator Increment Operators
-     * ================================
-     */
-    template<typename T>
-    typename DisjointSet<T>::iterator DisjointSet<T>::iterator::operator++()
-    {
-        ++it;
-        ++index;
-        return *this;
-    }
-
-    template<typename T>
-    typename DisjointSet<T>::iterator DisjointSet<T>::iterator::operator++(int)
-    {
-        iterator tmp(*this);
-        it++;
-        index++;
-        return tmp;
-    }
-
-
-    /**
-     * Iterator Distance Operators
-     * ================================
-     *
-     * Rather than using std::distance (which performs rather poorly!),
-     * we keep track of the distance of a given iterator and return that
-     * instead.
-     */
-    template<typename T>
-    const long DisjointSet<T>::iterator::operator-(const iterator& other) const
-    {
-        return index - other.index;
-    }
+    template<typename T, typename C>
+    DisjointSet<T, C>::iterator::iterator(T value)
+            : value(std::make_shared<T>(value))
+    { }
 
 
     /**
      * Iterator Reference Operators
      * ================================
      */
-    template<typename T>
-    const T DisjointSet<T>::iterator::operator*()
+    template<typename T, typename C>
+    const T& DisjointSet<T, C>::iterator::operator*()
     {
-        return it->first;
+        return *value;
     }
 
-    template<typename T>
-    const T* DisjointSet<T>::iterator::operator->()
+    template<typename T, typename C>
+    const T* DisjointSet<T, C>::iterator::operator->()
     {
-        return &it->first;
+        return value.get();
     }
 
 
@@ -170,16 +115,16 @@ namespace sage
      * Iterator Equality Operators
      * ================================
      */
-    template<typename T>
-    const bool DisjointSet<T>::iterator::operator==(const iterator& other)
+    template<typename T, typename C>
+    const bool DisjointSet<T, C>::iterator::operator==(const iterator& other)
     {
-        return index == other.index;
+        return value == other.value;
     }
 
-    template<typename T>
-    const bool DisjointSet<T>::iterator::operator!=(const iterator& other)
+    template<typename T, typename C>
+    const bool DisjointSet<T, C>::iterator::operator!=(const iterator& other)
     {
-        return index != other.index;
+        return value != other.value;
     }
 
 
@@ -187,8 +132,8 @@ namespace sage
      * Node Constructor
      * ================================
      */
-    template<typename T>
-    DisjointSet<T>::Node::Node(int rank, T parent)
+    template<typename T, typename C>
+    DisjointSet<T, C>::Node::Node(int rank, T parent)
             : rank(rank), parent(parent)
     { }
 
@@ -197,8 +142,8 @@ namespace sage
      * Copy Constructor
      * ================================
      */
-    template<typename T>
-    DisjointSet<T>::DisjointSet(const DisjointSet<T>& other)
+    template<typename T, typename C>
+    DisjointSet<T, C>::DisjointSet(const DisjointSet<T, C>& other)
     {
         for (auto pair : other.table) {
             table[pair.first] = std::make_shared<Node>(pair.second->rank, pair.second->parent);
@@ -210,8 +155,8 @@ namespace sage
      * Move Constructor
      * ================================
      */
-    template<typename T>
-    DisjointSet<T>::DisjointSet(DisjointSet<T>&& other)
+    template<typename T, typename C>
+    DisjointSet<T, C>::DisjointSet(DisjointSet<T, C>&& other)
             : table(other.table)
     { }
 
@@ -220,8 +165,8 @@ namespace sage
      * Assignment Operator
      * ================================
      */
-    template<typename T>
-    DisjointSet<T>& DisjointSet<T>::operator=(DisjointSet<T> other)
+    template<typename T, typename C>
+    DisjointSet<T, C>& DisjointSet<T, C>::operator=(DisjointSet<T, C> other)
     {
         swap(*this, other);
         return *this;
@@ -232,8 +177,8 @@ namespace sage
      * Swap Operator
      * ================================
      */
-    template<typename T>
-    void DisjointSet<T>::swap(DisjointSet<T>& a, DisjointSet<T>& b)
+    template<typename T, typename C>
+    void DisjointSet<T, C>::swap(DisjointSet<T, C>& a, DisjointSet<T, C>& b)
     {
         using std::swap;
         swap(a.table, b.table);
@@ -244,16 +189,10 @@ namespace sage
      * Iterator Operations
      * ================================
      */
-    template<typename T>
-    typename DisjointSet<T>::iterator DisjointSet<T>::begin()
+    template<typename T, typename C>
+    typename DisjointSet<T, C>::iterator DisjointSet<T, C>::end()
     {
-        return iterator(this);
-    }
-
-    template<typename T>
-    typename DisjointSet<T>::iterator DisjointSet<T>::end()
-    {
-        return iterator(this, reprs.end());
+        return iterator();
     }
 
 
@@ -264,16 +203,16 @@ namespace sage
      * Employs path compression for an amortized running cost inversely
      * proportional to the Ackermann function (when employed with rank comparison).
      */
-    template<typename T>
-    typename DisjointSet<T>::iterator DisjointSet<T>::findSet(T value)
+    template<typename T, typename C>
+    typename DisjointSet<T, C>::iterator DisjointSet<T, C>::findSet(T value)
     {
         auto it = table.find(value);
         if (it == table.end()) {
-            return iterator(this, reprs.end());
+            return end();
         } else if (value != it->second->parent) {
             it->second->parent = *findSet(it->second->parent);
         }
-        return iterator(this, reprs.find(it->second->parent));
+        return iterator(it->second->parent);
     }
 
 
@@ -286,8 +225,8 @@ namespace sage
      * Equally ranked nodes have the second element automatically assigned as
      * the new parent node.
      */
-    template<typename T>
-    void DisjointSet<T>::join(T a, T b)
+    template<typename T, typename C>
+    void DisjointSet<T, C>::join(T a, T b)
     {
         iterator first = findSet(a);
         iterator second = findSet(b);
@@ -299,14 +238,10 @@ namespace sage
         // The left most element should become parent
         } else if (table[*first]->rank > table[*second]->rank) {
             table[*second]->parent = a;
-            reprs[*first].insert(reprs[*second].begin(), reprs[*second].end());
-            reprs.erase(*second);
 
-        // The rightmost element shoudl become parent
+        // The rightmost element should become parent
         } else {
             table[*first]->parent = b;
-            reprs[*second].insert(reprs[*first].begin(), reprs[*first].end());
-            reprs.erase(*first);
             if(table[*first]->rank == table[*second]->rank) {
                 table[*second]->rank++;
             }
@@ -320,13 +255,11 @@ namespace sage
      *
      * Initial operation to add element into disjoint forest.
      */
-    template<typename T>
-    void DisjointSet<T>::createSet(T value)
+    template<typename T, typename C>
+    void DisjointSet<T, C>::createSet(T value)
     {
         if (table.find(value) == table.end()) {
             table[value] = std::make_shared<Node>(1, value);
-            reprs[value] = std::set<std::shared_ptr<Node>>();
-            reprs[value].insert(table[value]);
         }
     }
 

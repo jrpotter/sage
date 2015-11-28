@@ -42,15 +42,17 @@ namespace sage
             class iterator
             {
                 public:
-                    iterator(std::weak_ptr<Node>);
+                    iterator(std::shared_ptr<Node>);
                     iterator operator++();
                     iterator operator++(int);
-                    const V operator*();
+                    const V& operator*() const;
+                    const V* operator->() const;
+                    const std::pair<K, K> bounds() const;
                     const bool operator==(const iterator&);
                     const bool operator!=(const iterator&);
 
                 private:
-                    std::weak_ptr<Node> current;
+                    std::shared_ptr<Node> current;
             };
 
             // Constructors
@@ -111,7 +113,7 @@ namespace sage
      * ================================
      */
     template<typename K, typename V, typename C>
-    IntervalTree<K, V, C>::iterator::iterator(std::weak_ptr<Node> current)
+    IntervalTree<K, V, C>::iterator::iterator(std::shared_ptr<Node> current)
         : current(current)
     { }
 
@@ -126,10 +128,8 @@ namespace sage
     template<typename K, typename V, typename C>
     typename IntervalTree<K, V, C>::iterator IntervalTree<K, V, C>::iterator::operator++()
     {
-        if(auto cur = current.lock()) {
-            current = cur->successor();
-        }
-
+        auto s = current->successor();
+        current = s.lock();
         return *this;
     }
 
@@ -137,9 +137,8 @@ namespace sage
     typename IntervalTree<K, V, C>::iterator IntervalTree<K, V, C>::iterator::operator++(int)
     {
         iterator tmp(*this);
-        if(auto cur = current.lock()) {
-            current = cur->successor();
-        }
+        auto s = current->successor();
+        current = s.lock();
         return tmp;
     }
 
@@ -149,13 +148,21 @@ namespace sage
      * ================================
      */
     template<typename K, typename V, typename C>
-    const V IntervalTree<K, V, C>::iterator::operator*()
+    const V& IntervalTree<K, V, C>::iterator::operator*() const
     {
-        if(auto cur = current.lock()) {
-            return cur->value;
-        }
+        return current->value;
+    }
 
-        return V();
+    template<typename K, typename V, typename C>
+    const V* IntervalTree<K, V, C>::iterator::operator->() const
+    {
+        return &current->value;
+    }
+
+    template<typename K, typename V, typename C>
+    const std::pair<K, K> IntervalTree<K, V, C>::iterator::bounds() const
+    {
+        return current->bounds;
     }
 
 
@@ -281,7 +288,7 @@ namespace sage
     template<typename K, typename V, typename C>
     typename IntervalTree<K, V, C>::iterator IntervalTree<K, V, C>::end()
     {
-        return iterator(std::weak_ptr<Node>(std::shared_ptr<Node>()));
+        return iterator(std::shared_ptr<Node>());
     }
 
 
@@ -344,7 +351,6 @@ namespace sage
         // Apply fixes and change root color
         insert_fixup(next);
         root->red = false;
-
     }
 
 

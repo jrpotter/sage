@@ -15,7 +15,7 @@ using namespace sage;
  * Finds the pointer in question and begins building the closure via
  * a modified form of DFA (in which only epsilon edges are traversed).
  */
-weak_set<Automaton::Node> Automaton::Node::epsilonClosure()
+weak_set<Automaton::Node> Automaton::Node::epsilonClosure() const
 {
     weak_set<Node> closure;
     closure.insert(epsilon.begin(), epsilon.end());
@@ -25,7 +25,7 @@ weak_set<Automaton::Node> Automaton::Node::epsilonClosure()
     return closure;
 }
 
-void Automaton::Node::epsilonClosure(std::weak_ptr<Node> n, weak_set<Node>& closure)
+void Automaton::Node::epsilonClosure(std::weak_ptr<Node> n, weak_set<Node>& closure) const
 {
     if(closure.find(n) == closure.end()) {
         closure.insert(n);
