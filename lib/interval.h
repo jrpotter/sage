@@ -55,20 +55,20 @@ namespace sage
             };
 
             // Iterator Methods
-            iterator begin();
-            iterator end();
+            iterator begin() const;
+            iterator end() const;
 
             // Constructors
             IntervalTree();
 
             // Default Operation
             void insert(K, K, V, C = C());
-            iterator find(K, K, C = C());
+            iterator find(K, K, C = C()) const;
 
         private:
 
-            struct Node {
-
+            struct Node
+            {
                 // Data
                 V value;
                 std::pair<K, K> bounds;
@@ -89,7 +89,7 @@ namespace sage
 
                 // Utility Methods
                 void updateMaximum(C = C());
-                std::weak_ptr<Node> successor();
+                std::weak_ptr<Node> successor() const;
             };
 
             // The root of the tree; always black
@@ -224,7 +224,7 @@ namespace sage
      * ================================
      */
     template<typename K, typename V, typename C>
-    std::weak_ptr<struct IntervalTree<K, V, C>::Node> IntervalTree<K, V, C>::Node::successor()
+    std::weak_ptr<struct IntervalTree<K, V, C>::Node> IntervalTree<K, V, C>::Node::successor() const
     {
         // If there is a right child, we find the smallest element
         if(right) {
@@ -260,7 +260,7 @@ namespace sage
      * ================================
      */
     template<typename K, typename V, typename C>
-    typename IntervalTree<K, V, C>::iterator IntervalTree<K, V, C>::begin()
+    typename IntervalTree<K, V, C>::iterator IntervalTree<K, V, C>::begin() const
     {
         if(!root) {
             return end();
@@ -276,7 +276,7 @@ namespace sage
     }
 
     template<typename K, typename V, typename C>
-    typename IntervalTree<K, V, C>::iterator IntervalTree<K, V, C>::end()
+    typename IntervalTree<K, V, C>::iterator IntervalTree<K, V, C>::end() const
     {
         return iterator(std::shared_ptr<Node>());
     }
@@ -382,7 +382,7 @@ namespace sage
      */
     template<typename K, typename V, typename C>
     typename IntervalTree<K, V, C>::iterator
-    IntervalTree<K, V, C>::find(K lower_bound, K upper_bound, C compare)
+    IntervalTree<K, V, C>::find(K lower_bound, K upper_bound, C compare) const
     {
         auto current = root;
 

@@ -117,7 +117,7 @@ void DFA::reset()
  *
  * Utility method to see if the current cursor is on a final state.
  */
-bool DFA::final()
+bool DFA::final() const
 {
     if(auto c = cursor.lock()) {
         return c->finish;

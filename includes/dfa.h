@@ -31,7 +31,7 @@ namespace sage
 
             // Operations to move through the DFA
             void reset();
-            bool final();
+            bool final() const;
             bool traverse(char);
 
         private:

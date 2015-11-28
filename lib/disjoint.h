@@ -57,7 +57,7 @@ namespace sage
             void swap(DisjointSet&, DisjointSet&);
 
             // Iterator Operations
-            iterator end();
+            iterator end() const;
 
             // Basic Operations
             void join(T, T);
@@ -182,7 +182,7 @@ namespace sage
      * ================================
      */
     template<typename T, typename C>
-    typename DisjointSet<T, C>::iterator DisjointSet<T, C>::end()
+    typename DisjointSet<T, C>::iterator DisjointSet<T, C>::end() const
     {
         return iterator();
     }
