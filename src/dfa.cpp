@@ -62,7 +62,7 @@ DFA::DFA(std::shared_ptr<NFA> automaton)
     // We build corresponding DFA nodes for each
     graph.reserve(powersets.size());
     for(int i = 0; i < powersets.size(); i++) {
-        buildNode();
+        buildNode(false);
     }
 
     // Lastly we link all nodes together using the disjoint set information and index information

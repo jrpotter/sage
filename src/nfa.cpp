@@ -18,8 +18,8 @@ using namespace sage;
  */
 NFA::NFA()
 {
-    if(auto start_ptr = start.lock()) {
-        start_ptr->finish = true;
+    if(auto s_ptr = start.lock()) {
+        s_ptr->finish = true;
         finished.insert(start);
     }
 }
@@ -38,12 +38,12 @@ NFA::NFA(char c)
 
 NFA::NFA(char begin, char end)
 {
-    if(auto start_ptr = start.lock()) {
-        auto next = buildNode();
+    if(auto s_ptr = start.lock()) {
+        auto next = buildNode(false);
         if(auto next_ptr = next.lock()) {
             finished.insert(next);
             next_ptr->finish = true;
-            start_ptr->edges.insert(begin, end, next);
+            s_ptr->edges.insert(begin, end, next);
         }
     }
 }
@@ -57,7 +57,7 @@ NFA::NFA(char begin, char end)
  */
 void NFA::join(std::shared_ptr<NFA> tail)
 {
-    auto head = buildNode();
+    auto head = buildNode(false);
     if(auto h_ptr = head.lock()) {
         h_ptr->epsilon.push_back(tail->start);
         h_ptr->epsilon.push_back(start);
@@ -101,10 +101,15 @@ void NFA::concatenate(std::shared_ptr<NFA> tail)
  */
 void NFA::kleeneStar()
 {
+    // Allow skipping of the current element to the only element
+    // while still enabling repetitions as expected
+    kleenePlus();
     if(auto s_ptr = start.lock()) {
-        kleenePlus();
-        s_ptr->finish = true;
-        finished.insert(start);
+        for(auto f_node : finished) {
+            if(auto f_ptr = f_node.lock()) {
+                s_ptr->epsilon.push_back(f_node);
+            }
+        }
     }
 }
 
@@ -117,16 +122,22 @@ void NFA::kleeneStar()
  */
 void NFA::kleenePlus()
 {
-    auto head = buildNode();
+    auto head = buildNode(false);
+    auto tail = buildNode(true);
+
     if(auto h_ptr = head.lock()) {
         h_ptr->epsilon.push_back(start);
-        for(auto node : finished) {
-            if(auto n_ptr = node.lock()) {
-                n_ptr->epsilon.push_back(start);
+        for(auto f_node : finished) {
+            if(auto f_ptr = f_node.lock()) {
+                f_ptr->finish = false;
+                f_ptr->epsilon.push_back(start);
+                f_ptr->epsilon.push_back(tail);
             }
         }
     }
+
     start = head;
+    finished = weak_set<Node>({ tail });
 }
 
 /**
@@ -138,15 +149,20 @@ void NFA::kleenePlus()
  */
 void NFA::makeOptional()
 {
-    auto head = buildNode();
+    auto head = buildNode(false);
+    auto tail = buildNode(true);
+
     if(auto h_ptr = head.lock()) {
         h_ptr->epsilon.push_back(start);
-        for(auto node : finished) {
-            if(auto n_ptr = node.lock()) {
-                h_ptr->epsilon.push_back(n_ptr);
+        h_ptr->epsilon.push_back(tail);
+        for(auto f_node : finished) {
+            if(auto f_ptr = f_node.lock()) {
+                f_ptr->finish = false;
+                f_ptr->epsilon.push_back(tail);
             }
         }
     }
 
     start = head;
+    finished = weak_set<Node>({ tail });
 }

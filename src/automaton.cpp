@@ -9,6 +9,14 @@
 using namespace sage;
 
 /**
+ * Node Constructor
+ * ================================
+ */
+Automaton::Node::Node(bool finish)
+    : finish(finish)
+{ }
+
+/**
  * Epsilon Closure.
  * ================================
  *
@@ -44,7 +52,7 @@ void Automaton::Node::epsilonClosure(std::weak_ptr<Node> n, weak_set<Node>& clos
  */
 Automaton::Automaton()
 {
-    start = buildNode();
+    start = buildNode(false);
 }
 
 /**
@@ -68,9 +76,9 @@ Automaton::~Automaton()
  * Note also that the epsilon closure of every node includes the element itself.
  * The passed @next reference is a weak pointer to the current node in question.
  */
-std::weak_ptr<Automaton::Node> Automaton::buildNode()
+std::weak_ptr<Automaton::Node> Automaton::buildNode(bool finish)
 {
-    std::shared_ptr<Node> next = std::make_shared<Node>();
+    std::shared_ptr<Node> next = std::make_shared<Node>(finish);
     std::weak_ptr<Node> w_next = std::weak_ptr<Node>(next);
     next->epsilon.push_back(w_next);
     graph.push_back(next);

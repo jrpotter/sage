@@ -43,7 +43,7 @@ namespace sage
                     // Because NFAs are built repeatedly from nodes, and DFAs are built
                     // directly from NFAs, we mark nodes as not finished initially, and then
                     // modify this property as we continue on
-                    bool finish = false;
+                    bool finish;
 
                     // @epsilon refers to neighbor edges that can be reached for "free." That is, there is no
                     // requirement to consume a character in order to advance to an NFA in our epsilon vector
@@ -53,6 +53,9 @@ namespace sage
                     // initially designed so that each character/string would construct a new edge, this proves
                     // much to expensive.
                     IntervalTree<char, std::weak_ptr<Node>> edges;
+
+                    // Constructor
+                    Node(bool);
 
                     // Returns a collection of nodes corresponding to the epsilon closure
                     const weak_set<Node> epsilonClosure() const;
@@ -76,7 +79,7 @@ namespace sage
             std::weak_ptr<Node> start;
 
             // Utility method to construct node
-            std::weak_ptr<Node> buildNode();
+            std::weak_ptr<Node> buildNode(bool);
     };
 }
 

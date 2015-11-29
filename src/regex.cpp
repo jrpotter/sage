@@ -10,6 +10,14 @@
 using namespace sage;
 
 /**
+ * Precompiled Expressions
+ * ================================
+ */
+Regex Regex::FLOAT    = Regex("[+\\-]?(0|[1-9]\\d*)?(\\.\\d+)?");
+Regex Regex::INTEGRAL = Regex("[+\\-]?(0|[1-9]\\d*)");
+Regex Regex::WORD     = Regex("\\A*");
+
+/**
  * Exception Constructor
  * ================================
  */
@@ -182,37 +190,40 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter) const
 
         // Begin processing node
         switch(c) {
-            case REGEX_OPTION:
+            case REGEX_CHOOSE:
                 components.emplace_back(std::make_shared<NFA>());
                 continue;
-            case REGEX_SUB_START:
-                next = read(ss, counter+1);
-                break;
             case REGEX_RANGE_START:
                 next = readRange(ss);
                 break;
             case REGEX_SPECIAL:
                 next = readSpecial(ss);
                 break;
+            case REGEX_SUB_START:
+                next = read(ss, counter+1);
+                break;
             case REGEX_HYPHEN:
-            case REGEX_RANGE_END:
-            case REGEX_KLEENE_STAR:
             case REGEX_KLEENE_PLUS:
+            case REGEX_KLEENE_STAR:
             case REGEX_OPTIONAL:
+            case REGEX_RANGE_END:
                 throw InvalidRegularExpression("Unexpected '%c'", c, ss.tellg());
+            case REGEX_WILDCARD:
+                next = std::make_shared<NFA>(0, std::numeric_limits<char>::max());
+                break;
             default:
                 next = std::make_shared<NFA>(c);
                 break;
         }
 
         // Allow for repetition operations
-        if(ss.peek() == REGEX_KLEENE_STAR || ss.peek() == REGEX_KLEENE_PLUS || ss.peek() == REGEX_OPTIONAL) {
+        if(ss.peek() == REGEX_KLEENE_PLUS || ss.peek() == REGEX_KLEENE_STAR || ss.peek() == REGEX_OPTIONAL) {
             switch(ss.get()) {
-                case REGEX_KLEENE_STAR:
-                    next->kleeneStar();
-                    break;
                 case REGEX_KLEENE_PLUS:
                     next->kleenePlus();
+                    break;
+                case REGEX_KLEENE_STAR:
+                    next->kleeneStar();
                     break;
                 case REGEX_OPTIONAL:
                     next->makeOptional();
@@ -342,16 +353,17 @@ std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss) const
             case 'w': // Alphanumeric Characters
                 range << "a-zA-Z0-9]";
                 break;
+            case REGEX_CHOOSE:
             case REGEX_HYPHEN:
-            case REGEX_KLEENE_STAR:
             case REGEX_KLEENE_PLUS:
+            case REGEX_KLEENE_STAR:
             case REGEX_OPTIONAL:
             case REGEX_RANGE_END:
             case REGEX_RANGE_START:
+            case REGEX_SPECIAL:
             case REGEX_SUB_END:
             case REGEX_SUB_START:
-            case REGEX_OPTION:
-            case REGEX_SPECIAL:
+            case REGEX_WILDCARD:
                 return std::make_shared<NFA>(c);
             default:
                 throw InvalidRegularExpression("Unrecognized special character '%c'", c, ss.tellg());

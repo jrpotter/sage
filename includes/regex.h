@@ -1,10 +1,9 @@
 /**
  * regex.h
  *
- * The following is the main regular expression interface, used to verify
- * if strings match a given regex. Underneath the class builds an NFA and
- * converts it to a corresponding DFA which it traverses to provide
- * matching functionality.
+ * The following is the main, greedy regular expression interface, used to verify
+ * if strings match a given regex. Underneath the class builds an NFA and converts it
+ * to a corresponding DFA which it traverses to provide matching functionality.
  *
  * Special keywords are also provided as follows:
  * - \s: Whitespace ([ \t\v\r\n])
@@ -22,6 +21,7 @@
 #define SAGE_REGEX_H
 
 #include <list>
+#include <limits>
 #include <string>
 #include <sstream>
 #include <algorithm>
@@ -29,16 +29,17 @@
 
 #include "dfa.h"
 
+#define REGEX_CHOOSE      '|'
 #define REGEX_HYPHEN      '-'
-#define REGEX_SUB_START   '('
-#define REGEX_SUB_END     ')'
-#define REGEX_RANGE_START '['
-#define REGEX_RANGE_END   ']'
-#define REGEX_KLEENE_STAR '*'
 #define REGEX_KLEENE_PLUS '+'
+#define REGEX_KLEENE_STAR '*'
 #define REGEX_OPTIONAL    '?'
-#define REGEX_OPTION      '|'
+#define REGEX_RANGE_END   ']'
+#define REGEX_RANGE_START '['
 #define REGEX_SPECIAL     '\\'
+#define REGEX_SUB_END     ')'
+#define REGEX_SUB_START   '('
+#define REGEX_WILDCARD    '.'
 
 namespace sage
 {
@@ -67,6 +68,12 @@ namespace sage
             // Basic operations
             int find(std::string);
             bool matches(std::string, int);
+
+            // Precompiled Expressions
+            // For consistency sake, empty strings will match in each case
+            static Regex FLOAT;
+            static Regex INTEGRAL;
+            static Regex WORD;
 
         private:
 
