@@ -7,8 +7,12 @@ using namespace sage;
 
 int main() {
 
-    Regex r("a(b|c)*");
-    cout << r.matches("acbcbe", 0) << endl;
+    try {
+        Regex r("a[]");
+        cout << r.matches("a", 0) << endl;
+    } catch(InvalidRegularExpression e) {
+        std::cout << e.what() << std::endl;
+    }
 
     return 0;
 }

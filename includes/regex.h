@@ -29,17 +29,27 @@
 
 #include "dfa.h"
 
+#define REGEX_HYPHEN      '-'
+#define REGEX_SUB_START   '('
+#define REGEX_SUB_END     ')'
+#define REGEX_RANGE_START '['
+#define REGEX_RANGE_END   ']'
+#define REGEX_KLEENE_STAR '*'
+#define REGEX_KLEENE_PLUS '+'
+#define REGEX_OPTIONAL    '?'
+#define REGEX_OPTION      '|'
+#define REGEX_SPECIAL     '\\'
+
 namespace sage
 {
     class InvalidRegularExpression : public std::exception
     {
         public:
-            InvalidRegularExpression(std::string, long);
-            virtual const char* what() const;
+            InvalidRegularExpression(std::string, char, long);
+            virtual const char* what() const noexcept;
 
         private:
-            std::string message;
-            long index;
+            std::string response;
     };
 
     class Regex
@@ -65,10 +75,13 @@ namespace sage
             std::unique_ptr<DFA> automaton;
 
             // Reads in a stream of characters and converts it to a corresponding NFA
-            std::shared_ptr<NFA> read(std::stringstream&) const;
+            std::shared_ptr<NFA> read(std::stringstream&, int=0) const;
 
             // Reads in a range of characters (i.e. [-])
             std::shared_ptr<NFA> readRange(std::stringstream&) const;
+
+            // Reads in special values (those following a '\')
+            std::shared_ptr<NFA> readSpecial(std::stringstream&) const;
 
             // Utility method to combine NFAs together
             const std::shared_ptr<NFA> collapseNFAs(std::list<std::shared_ptr<NFA>>&) const;

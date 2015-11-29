@@ -5,6 +5,7 @@
  */
 
 #include "regex.h"
+#include <iostream>
 
 using namespace sage;
 
@@ -12,20 +13,37 @@ using namespace sage;
  * Exception Constructor
  * ================================
  */
-InvalidRegularExpression::InvalidRegularExpression(std::string message, long index)
-    : message(message), index(index)
-{ }
+InvalidRegularExpression::InvalidRegularExpression(std::string message, char problem, long index)
+{
+    std::stringstream ss;
+
+    // First format string
+    char* buffer = new char[message.size()];
+    int result = snprintf(buffer, sizeof(char) * message.size(), message.c_str(), problem);
+    if(result < sizeof(char) * message.size()) {
+        ss << buffer;
+        if(index == EOF) {
+            ss << " by end of expression.";
+        } else {
+            ss << " at position " << index << '.';
+        }
+        ss << std::endl;
+    } else {
+        ss << "An error occurred with Sage." << std::endl;
+    }
+
+    // Cleanup
+    delete[] buffer;
+    response = ss.str();
+}
 
 /**
  * Exception Message
  * ================================
  */
-virtual const char* InvalidRegularExpression::what() const
+const char* InvalidRegularExpression::what() const noexcept
 {
-    std::stringstream ss(message);
-    ss << " at position " << index << std::endl;
-
-    return ss.str().c_str();
+    return response.c_str();
 }
 
 /**
@@ -145,7 +163,7 @@ const std::shared_ptr<NFA> Regex::collapseNFAs(std::list<std::shared_ptr<NFA>>& 
  * build the corresponding NFA. We build up the NFA in parts
  * (as indicated by '|') to then be joined together.
  */
-std::shared_ptr<NFA> Regex::read(std::stringstream& ss) const
+std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter) const
 {
     // Start the NFA to be built
     // This will continue to be expanded as '|'s are encountered
@@ -158,41 +176,48 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss) const
     // caution must be taken when using this (if this is something
     // one would ever use...)
     char c;
-    while(ss.get(c) && c != ')') {
+    while(ss.get(c) && c != REGEX_SUB_END) {
 
         std::shared_ptr<NFA> next = nullptr;
 
         // Begin processing node
         switch(c) {
-            case '|':
+            case REGEX_OPTION:
                 components.emplace_back(std::make_shared<NFA>());
                 continue;
-            case '(':
-                next = read(ss);
+            case REGEX_SUB_START:
+                next = read(ss, counter+1);
                 break;
-            case '[':
+            case REGEX_RANGE_START:
                 next = readRange(ss);
                 break;
-            case '\\':
-                next = std::make_shared<NFA>(ss.get());
+            case REGEX_SPECIAL:
+                next = readSpecial(ss);
                 break;
+            case REGEX_HYPHEN:
+            case REGEX_RANGE_END:
+            case REGEX_KLEENE_STAR:
+            case REGEX_KLEENE_PLUS:
+            case REGEX_OPTIONAL:
+                throw InvalidRegularExpression("Unexpected '%c'", c, ss.tellg());
             default:
                 next = std::make_shared<NFA>(c);
                 break;
         }
 
         // Allow for repetition operations
-        if(ss.peek() == '*' || ss.peek() == '+' || ss.peek() == '?') {
-            ss.get(c);
-            switch(c) {
-                case '*':
+        if(ss.peek() == REGEX_KLEENE_STAR || ss.peek() == REGEX_KLEENE_PLUS || ss.peek() == REGEX_OPTIONAL) {
+            switch(ss.get()) {
+                case REGEX_KLEENE_STAR:
                     next->kleeneStar();
                     break;
-                case '+':
+                case REGEX_KLEENE_PLUS:
                     next->kleenePlus();
                     break;
-                case '?':
+                case REGEX_OPTIONAL:
                     next->makeOptional();
+                    break;
+                default:
                     break;
             }
         }
@@ -205,9 +230,14 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss) const
 
     // If we finished reading in input even though there is still more to
     // read on the stream, we must have encountered an extra ')' and need
-    // to report the error
-    if(ss.peek() != EOF) {
-        throw InvalidRegularExpression("Encountered extra ')' character", ss.tellg());
+    // to report the error. Otherwise if we reached an end but we're not
+    // back at the root call, then we have nested ourselves too far.
+    if(counter == 0 && c == REGEX_SUB_END) {
+        throw InvalidRegularExpression("Encountered extra '%c' character", REGEX_SUB_END, ss.tellg());
+    } else if(counter == 1 && ss.peek() == EOF && c != REGEX_SUB_END) {
+        throw InvalidRegularExpression("Encountered extra '%c' character", REGEX_SUB_START, ss.tellg());
+    } else if(counter > 1 && ss.peek() == EOF) {
+        throw InvalidRegularExpression("Encountered extra '%c' character", REGEX_SUB_START, ss.tellg());
     }
 
     return collapseNFAs(components);
@@ -221,25 +251,114 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss) const
  * range provided. Note this does not require just a single character.
  * If one would like, they could specify something like [ab-ae] to represent
  * 'ab', 'ac', 'ad', and 'ae'.
+ *
+ * Note within a range it is valid to use any regex characters besides hyphens
+ * as if they were regular characters. Prefixing them with a backslash will make
+ * no difference. That being said, one can still use the special characters
+ * (e.g. '\s').
  */
 std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss) const
 {
+    auto head = std::make_shared<NFA>();
     std::list<std::shared_ptr<NFA>> components;
-    components.emplace_back(std::make_shared<NFA>());
 
     // Build range together. Note any values not hyphenated across
     // are optional values. That is, they may instead be used to
     // represent the sub-NFA. For example, [15-8a] means either
     // '1', '5', '6', '7', '8', or 'a' matches the given NFA
     char begin;
-    while(ss.get(begin) && begin != ']') {
-        if(ss.peek() == '-') {
-            char end; ss.get(); ss.get(end);
-            components.emplace_back(std::make_shared<NFA>(begin, end));
+    while(ss.get(begin) && begin != REGEX_RANGE_END) {
+
+        // Special characters are expanded to what they represent
+        if(begin == REGEX_SPECIAL) {
+            components.emplace_back(readSpecial(ss));
+
+        // If we ever read in a hyphen not preceded by a character then an
+        // invalid range has been specified. Ranges between characters are
+        // perfectly valid, but it is important that they are actually in order
+        } else if(begin != REGEX_HYPHEN) {
+            if(ss.peek() == '-') {
+                char end; ss.get();
+                if(!ss.get(end)) {
+                    throw InvalidRegularExpression("End range of '%c' not specified", REGEX_HYPHEN, ss.tellg());
+                } else if(begin > end) {
+                    throw InvalidRegularExpression("Range starting at '%c' not ordered correctly", begin, ss.tellg());
+                } else {
+                    components.emplace_back(std::make_shared<NFA>(begin, end));
+                }
+            } else {
+                components.emplace_back(std::make_shared<NFA>(begin));
+            }
+
+        // Otherwise we encountered a hypher, but this should only occur after reading in a character
         } else {
-            components.emplace_back(std::make_shared<NFA>(begin));
+            throw InvalidRegularExpression("Encountered non-paired '%c'", REGEX_HYPHEN, ss.tellg());
         }
     }
 
-    return collapseNFAs(components);
+    // Did not encounter the end of the range
+    if(begin != REGEX_RANGE_END) {
+        throw InvalidRegularExpression("Expected '%c'", REGEX_RANGE_END, ss.tellg());
+    }
+
+    // Need to join all together
+    // Note if our components is empty, we essentially have an empty range and thus anything matches
+    // (because our initial head is a final state). This may not be desired behavior, but I'll just
+    // settle on the idea that it is 'undefined' since what's an empty range mean anyways?
+    if(components.size() > 0) {
+        head->concatenate(collapseNFAs(components));
+    }
+
+    return head;
+}
+
+/**
+ * Reads Special
+ * ================================
+ *
+ * Any unrecognized characters immediately throw an error. Unfortunately, because
+ * '\' is used to escape in both C++ and the following regex, it is necessary to
+ * pass '\\\\' in order to indicate a backslash in the regex.
+ */
+std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss) const
+{
+    std::stringstream range;
+
+    char c;
+    if(ss.get(c)) {
+        switch(c) {
+            case 's': // Whitespace ([ \t\v\r\n])
+                range << " \t\v\r\n]";
+                break;
+            case 'd': // Digits
+                range << "0-9]";
+                break;
+            case 'a': // Lowercase Characters
+                range << "a-z]";
+                break;
+            case 'A': // Uppercase Characters
+                range << "A-Z]";
+                break;
+            case 'w': // Alphanumeric Characters
+                range << "a-zA-Z0-9]";
+                break;
+            case REGEX_HYPHEN:
+            case REGEX_KLEENE_STAR:
+            case REGEX_KLEENE_PLUS:
+            case REGEX_OPTIONAL:
+            case REGEX_RANGE_END:
+            case REGEX_RANGE_START:
+            case REGEX_SUB_END:
+            case REGEX_SUB_START:
+            case REGEX_OPTION:
+            case REGEX_SPECIAL:
+                return std::make_shared<NFA>(c);
+            default:
+                throw InvalidRegularExpression("Unrecognized special character '%c'", c, ss.tellg());
+        }
+    } else {
+        throw InvalidRegularExpression("Expected character after '%c'", REGEX_SPECIAL, ss.tellg());
+    }
+
+    return readRange(range);
 }
