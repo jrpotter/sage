@@ -63,8 +63,16 @@ namespace sage
         public:
 
             // Constructors
-            template <typename... Args>
-            Regex(std::string, Args...);
+            Regex() = default;
+            Regex(std::string);
+            Regex(std::string, std::vector<Regex>);
+
+            // Other Constructors
+            virtual ~Regex() = default;
+            Regex(const Regex&);
+            Regex(Regex&&);
+            Regex& operator= (Regex);
+            void swap(Regex&, Regex&);
 
             // Basic operations
             int find(std::string);

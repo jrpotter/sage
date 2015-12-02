@@ -64,6 +64,36 @@ NFA::NFA(const NFA& other)
 }
 
 /**
+ * NFA Move Constructor
+ * ================================
+ */
+NFA::NFA(NFA&& other)
+    : NFA()
+{
+    swap(*this, other);
+}
+
+/**
+ * NFA Assignment Operator
+ * ================================
+ */
+NFA& NFA::operator= (NFA other)
+{
+    swap(*this, other);
+    return *this;
+}
+
+/**
+ * NFA Swap Operator
+ * ================================
+ */
+void NFA::swap(NFA& a, NFA& b)
+{
+    using std::swap;
+    swap(a.finished, b.finished);
+}
+
+/**
  * Join
  * ================================
  *

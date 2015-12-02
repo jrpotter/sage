@@ -31,7 +31,6 @@ namespace sage
             virtual ~Automaton()=0;
             Automaton(const Automaton&);
             Automaton(Automaton&&);
-            Automaton& operator= (Automaton);
             void swap(Automaton&, Automaton&);
 
         protected:

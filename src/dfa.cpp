@@ -110,7 +110,7 @@ DFA::DFA(const DFA& other)
     if(auto c = other.cursor.lock()) {
         for(int i = 0; i < other.graph.size(); i++) {
             if(c == other.graph[i]) {
-                cursor = std::weak_ptr<Node[i]>(graph[i]);
+                cursor = std::weak_ptr<Node>(graph[i]);
                 break;
             }
         }

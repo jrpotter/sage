@@ -79,7 +79,7 @@ Automaton::Automaton(const Automaton& other)
     graph.reserve(other.graph.size());
     for(auto node : other.graph) {
         graph.emplace_back(std::make_shared<Node>(node->finish));
-        mapping.insert(node, graph.back());
+        mapping[node] = graph.back();
     }
 
     // Next connect the necessary nodes
@@ -118,16 +118,6 @@ Automaton::Automaton(Automaton&& other)
     : Automaton()
 {
     swap(*this, other);
-}
-
-/**
- * Automaton Assignment Operator
- * ================================
- */
-Automaton& Automaton::operator= (Automaton other)
-{
-    std::swap(*this, other);
-    return *this;
 }
 
 /**

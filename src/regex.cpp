@@ -61,14 +61,57 @@ const char* InvalidRegularExpression::what() const noexcept
  * Constructs an NFA out of the given expression, and then converts it to a DFA
  * which is stored for later matching.
  */
-template<typename... Args>
-Regex::Regex(std::string expr, Args... subs)
+Regex::Regex(std::string expr)
+    : Regex(expr, {})
+{ }
+
+Regex::Regex(std::string expr, std::vector<Regex> subs)
     :expr(expr)
     ,automaton(nullptr)
 {
     std::stringstream ss(expr);
     std::shared_ptr<NFA> nfa = read(ss);
     automaton = std::make_shared<DFA>(nfa);
+}
+
+/**
+ * Copy Constructor
+ * ================================
+ */
+Regex::Regex(const Regex& other)
+    : expr(other.expr)
+    , automaton(std::make_shared<DFA>(*other.automaton))
+{ }
+
+/**
+ * Move Constructor
+ * ================================
+ */
+Regex::Regex(Regex&& other)
+    : Regex()
+{
+    swap(*this, other);
+}
+
+/**
+ * Assignment Operator
+ * ================================
+ */
+Regex& Regex::operator= (Regex other)
+{
+    swap(*this, other);
+    return *this;
+}
+
+/**
+ * Swap Operator
+ * ================================
+ */
+void Regex::swap(Regex& a, Regex& b)
+{
+    using std::swap;
+    swap(a.expr, b.expr);
+    swap(a.automaton, b.automaton);
 }
 
 /**
