@@ -9,8 +9,13 @@
  * - \s: Whitespace ([ \t\v\r\n])
  * - \d: Digits ([0-9])
  * - \a: Lowercase Characters ([a-z])
- * - \A: Uppercase Characters ([A-Z])
+ * - \U: Uppercase Characters ([A-Z])
+ * - \A: Alphabetical Characters ([a-zA-Z])
  * - \w: Alphanumeric Characters ([a-zA-Z0-9])
+ *
+ * In addition, by bracketing words (i.e. '{' and '}') and passing a regex corresponding to
+ * this parameterized word, we can place sub-regexes into our given code. For instance, I can
+ * represent a character as r = Regex("[a-zA-Z]") and a word as w = Regex("{Character}+", r).
  *
  * The following also provides an exception class providing details on any invalid regexes.
  *
@@ -58,28 +63,28 @@ namespace sage
         public:
 
             // Constructors
-            Regex(std::string);
-            ~Regex()=default;
-            Regex(const Regex&);
-            Regex(Regex&&);
-            Regex& operator= (Regex);
-            void swap(Regex&, Regex&);
+            template <typename... Args>
+            Regex(std::string, Args...);
 
             // Basic operations
             int find(std::string);
-            bool matches(std::string, int);
+            bool matches(std::string, int=0);
 
-            // Precompiled Expressions
-            // For consistency sake, empty strings will match in each case
-            static Regex FLOAT;
-            static Regex INTEGRAL;
-            static Regex WORD;
+            // "Precompiled" Expressions
+            // By precompiled I do not mean I generate the regex for each of these expressions.
+            // This would prove much too heavy in terms of memory usage (the construction process
+            // of NFA to DFA, at least at the moment, is fairly hefty). Instead, these are
+            // strings that can be passed into the Regex constructor for simplicity sake.
+            static std::string FLOAT;
+            static std::string INTEGRAL;
+            static std::string WHITESPACE;
+            static std::string WORD;
 
         private:
 
             // Reference Members
             std::string expr;
-            std::unique_ptr<DFA> automaton;
+            std::shared_ptr<DFA> automaton;
 
             // Reads in a stream of characters and converts it to a corresponding NFA
             std::shared_ptr<NFA> read(std::stringstream&, int=0) const;

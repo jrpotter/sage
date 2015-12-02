@@ -29,6 +29,10 @@ namespace sage
             // Constructors
             Automaton();
             virtual ~Automaton()=0;
+            Automaton(const Automaton&);
+            Automaton(Automaton&&);
+            Automaton& operator= (Automaton);
+            void swap(Automaton&, Automaton&);
 
         protected:
 
@@ -55,6 +59,10 @@ namespace sage
                     IntervalTree<char, std::weak_ptr<Node>> edges;
 
                     // Constructor
+                    // Note that we do not include the other type of constructors here since
+                    // copying of the node should be done by the automaton in question. This is
+                    // because we need to apply all edges to a corresponding node in the copied
+                    // automaton. Otherwise we'd have a confusing mess of a connected network.
                     Node(bool);
 
                     // Returns a collection of nodes corresponding to the epsilon closure

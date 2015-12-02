@@ -32,6 +32,11 @@ namespace sage
             NFA();
             NFA(char);
             NFA(char, char);
+            virtual ~NFA() = default;
+            NFA(const NFA&);
+            NFA(NFA&&);
+            NFA& operator= (NFA);
+            void swap(NFA&, NFA&);
 
             // Union.
             // Sets up target NFA as immediately accessible.

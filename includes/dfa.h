@@ -28,6 +28,11 @@ namespace sage
         
             // Constructors
             DFA(std::shared_ptr<NFA>);
+            virtual ~DFA() = default;
+            DFA(const DFA&);
+            DFA(DFA&&);
+            DFA& operator= (DFA);
+            void swap(DFA&, DFA&);
 
             // Operations to move through the DFA
             void reset();

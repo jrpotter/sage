@@ -49,6 +49,21 @@ NFA::NFA(char begin, char end)
 }
 
 /**
+ * NFA Copy Constructor
+ * ================================
+ */
+NFA::NFA(const NFA& other)
+    : Automaton(other)
+{
+    // Must add all finishing nodes to our set
+    for(auto node : graph) {
+        if(node->finish) {
+            finished.insert(node);
+        }
+    }
+}
+
+/**
  * Join
  * ================================
  *

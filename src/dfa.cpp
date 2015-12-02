@@ -96,7 +96,54 @@ DFA::DFA(std::shared_ptr<NFA> automaton)
             }
         }
     }
+}
 
+/**
+ * Copy Constructor
+ * ================================
+ */
+DFA::DFA(const DFA& other)
+    : Automaton(other)
+{
+    // Must find corresponding cursor (generally will be start but
+    // can't be certain of this).
+    if(auto c = other.cursor.lock()) {
+        for(int i = 0; i < other.graph.size(); i++) {
+            if(c == other.graph[i]) {
+                cursor = std::weak_ptr<Node[i]>(graph[i]);
+                break;
+            }
+        }
+    }
+}
+
+/**
+ * Move Constructor
+ * ================================
+ */
+DFA::DFA(DFA&& other)
+{
+    swap(*this, other);
+}
+
+/**
+ * Assignment Operator
+ * ================================
+ */
+DFA& DFA::operator= (DFA other)
+{
+    swap(*this, other);
+    return *this;
+}
+
+/**
+ * Swap Operator
+ * ================================
+ */
+void DFA::swap(DFA& a, DFA& b)
+{
+    using std::swap;
+    swap(a.cursor, b.cursor);
 }
 
 /**

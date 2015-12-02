@@ -5,7 +5,6 @@
  */
 
 #include "regex.h"
-#include <iostream>
 
 using namespace sage;
 
@@ -13,9 +12,10 @@ using namespace sage;
  * Precompiled Expressions
  * ================================
  */
-Regex Regex::FLOAT    = Regex("[+\\-]?(0|[1-9]\\d*)?(\\.\\d+)?");
-Regex Regex::INTEGRAL = Regex("[+\\-]?(0|[1-9]\\d*)");
-Regex Regex::WORD     = Regex("\\A*");
+std::string Regex::FLOAT      = "[+\\-]?(0|[1-9]\\d*)?(\\.\\d*)?";
+std::string Regex::INTEGRAL   = "[+\\-]?(0|[1-9]\\d*)";
+std::string Regex::WHITESPACE = "\\w";
+std::string Regex::WORD       = "\\A*";
 
 /**
  * Exception Constructor
@@ -61,51 +61,14 @@ const char* InvalidRegularExpression::what() const noexcept
  * Constructs an NFA out of the given expression, and then converts it to a DFA
  * which is stored for later matching.
  */
-Regex::Regex(std::string expr)
+template<typename... Args>
+Regex::Regex(std::string expr, Args... subs)
     :expr(expr)
     ,automaton(nullptr)
 {
     std::stringstream ss(expr);
     std::shared_ptr<NFA> nfa = read(ss);
-    automaton = sage::make_unique<DFA>(nfa);
-}
-
-/**
- * Copy Constructor
- * ================================
- */
-Regex::Regex(const Regex& other)
-    :expr(other.expr)
-{ }
-
-/**
- * Move Constructor
- * ================================
- */
-Regex::Regex(Regex&& other)
-{
-    swap(*this, other);
-}
-
-/**
- * Assignment Operator
- * ================================
- */
-Regex& Regex::operator= (Regex other)
-{
-    swap(*this, other);
-    return *this;
-}
-
-/**
- * Swap Operator
- * ================================
- */
-void Regex::swap(Regex& a, Regex &b)
-{
-    using std::swap;
-    swap(a.expr, b.expr);
-    swap(a.automaton, b.automaton);
+    automaton = std::make_shared<DFA>(nfa);
 }
 
 /**
@@ -347,8 +310,11 @@ std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss) const
             case 'a': // Lowercase Characters
                 range << "a-z]";
                 break;
-            case 'A': // Uppercase Characters
+            case 'U': // Uppercase Characters
                 range << "A-Z]";
+                break;
+            case 'A': // Alphabetical Characters
+                range << "a-zA-Z]";
                 break;
             case 'w': // Alphanumeric Characters
                 range << "a-zA-Z0-9]";
