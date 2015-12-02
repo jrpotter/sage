@@ -59,7 +59,13 @@ const char* InvalidRegularExpression::what() const noexcept
  * ================================
  *
  * Constructs an NFA out of the given expression, and then converts it to a DFA
- * which is stored for later matching.
+ * which is stored for later matching. Bracketed expressions are handled in a manner
+ * similar to format strings; that is, once a bracketed word has been found, this
+ * word is mapped to the regex corresponding to the index of the bracketed word.
+ * For example, if there is a regex "{a}{b}", then "a" is the name of the regex
+ * at the 0th index of our vector, and "b" is the name of the regex at the 1st index.
+ * If the same named regex is later found, it refers to the element already mapped
+ * to and not the next indexed value.
  */
 Regex::Regex(std::string expr)
     : Regex(expr, {})

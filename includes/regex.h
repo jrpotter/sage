@@ -41,6 +41,8 @@
 #define REGEX_OPTIONAL    '?'
 #define REGEX_RANGE_END   ']'
 #define REGEX_RANGE_START '['
+#define REGEX_REPL_START  '{'
+#define REGEX_REPL_END    '}'
 #define REGEX_SPECIAL     '\\'
 #define REGEX_SUB_END     ')'
 #define REGEX_SUB_START   '('
