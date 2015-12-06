@@ -1,0 +1,24 @@
+# This is a sample PEG that matches valid arithmetic expressions.
+# Its purpose is to provide an example of how PEGs should be constructed
+# for use by Sage.
+#
+# Nonterminals are placed on the left side of the arrow ('->') operator
+# and are substituted on the right side of the arrow if the name of the
+# nonterminal is wrapped with curly braces ('{' and '}').
+#
+# Use the apostrophe ('\'') character to denote the starting nonterminal.
+#
+# Provide multiple definitions for a nonterminal via the choice operator
+# ('|'). Note each option is tried in order, and will stop once a successful
+# match has been encountered. Thus expressions like:
+#
+# Example -> {Example} | [1-9]
+#
+# will fail since each time Example is induced, it will look again into Example.
+#
+# Ref: https://en.wikipedia.org/wiki/Parsing_expression_grammar
+
+Expression' -> Sum
+Sum         -> Product ([+\-] Product)*
+Product     -> Value ([*/] Value)*
+Value       -> [0-9]+ | '('{Expression}')'

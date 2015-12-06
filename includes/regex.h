@@ -67,7 +67,6 @@ namespace sage
             // Constructors
             Regex() = default;
             Regex(std::string);
-            Regex(std::string, std::vector<Regex>);
 
             // Other Constructors
             virtual ~Regex() = default;

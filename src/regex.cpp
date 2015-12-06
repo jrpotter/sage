@@ -66,14 +66,10 @@ const char* InvalidRegularExpression::what() const noexcept
  * at the 0th index of our vector, and "b" is the name of the regex at the 1st index.
  * If the same named regex is later found, it refers to the element already mapped
  * to and not the next indexed value.
+ *
+ * TODO: Bracketed expressions
  */
 Regex::Regex(std::string expr)
-    : Regex(expr, {})
-{ }
-
-Regex::Regex(std::string expr, std::vector<Regex> subs)
-    :expr(expr)
-    ,automaton(nullptr)
 {
     std::stringstream ss(expr);
     std::shared_ptr<NFA> nfa = read(ss);
