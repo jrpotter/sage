@@ -29,7 +29,22 @@ namespace sage
             Scanner(std::istream&, Regex);
 
             // Scanning Methods
+            int nextInt();
+            char nextChar();
+            double nextDouble();
+            std::string nextWord();
             std::string next(Regex);
+            std::string readLine();
+
+            // Peeking Methods
+            char peekChar();
+
+            // Testing Methods
+            bool hasNextInt();
+            bool hasNextChar();
+            bool hasNextDouble();
+            bool hasNext(Regex);
+            bool eof();
 
         private:
 
@@ -38,6 +53,9 @@ namespace sage
 
             // Represents the regex matching the separator between tokens
             Regex delimiter;
+
+            // Used to remove delimiter content between tokens in stream
+            void clearDelimiterContent();
 
     };
 }

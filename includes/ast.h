@@ -19,7 +19,7 @@ namespace sage
 
         private:
             std::string symbol;
-            std::vector branches;
+            std::vector<AST> branches;
     };
 }
 

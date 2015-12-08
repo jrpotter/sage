@@ -18,7 +18,7 @@
 #
 # Ref: https://en.wikipedia.org/wiki/Parsing_expression_grammar
 
-Expression' -> Sum
-Sum         -> Product ([+\-] Product)*
-Product     -> Value ([*/] Value)*
+Expression' -> {Sum}
+Sum         -> {Product} ([+\-] {Product})*
+Product     -> {Value} ([*/] {Value})*
 Value       -> [0-9]+ | '('{Expression}')'
