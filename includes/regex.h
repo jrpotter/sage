@@ -34,19 +34,42 @@
 
 #include "dfa.h"
 
-#define REGEX_CHOOSE      '|'
-#define REGEX_HYPHEN      '-'
-#define REGEX_KLEENE_PLUS '+'
-#define REGEX_KLEENE_STAR '*'
-#define REGEX_OPTIONAL    '?'
-#define REGEX_RANGE_END   ']'
-#define REGEX_RANGE_START '['
-#define REGEX_REPL_START  '{'
-#define REGEX_REPL_END    '}'
-#define REGEX_SPECIAL     '\\'
-#define REGEX_SUB_END     ')'
-#define REGEX_SUB_START   '('
-#define REGEX_WILDCARD    '.'
+// Regex Operators
+// These are used in the construction of regexes
+#define REGEX_CHOOSE           '|'
+#define REGEX_HYPHEN           '-'
+#define REGEX_KLEENE_PLUS      '+'
+#define REGEX_KLEENE_STAR      '*'
+#define REGEX_OPTIONAL         '?'
+#define REGEX_RANGE_END        ']'
+#define REGEX_RANGE_START      '['
+#define REGEX_REPL_START       '{'
+#define REGEX_REPL_END         '}'
+#define REGEX_SPECIAL          '\\'
+#define REGEX_SUB_END          ')'
+#define REGEX_SUB_START        '('
+#define REGEX_WILDCARD         '.'
+
+// Pool Keys
+// Used to reference static keys in the regex pool
+#define REGEX_POOL_CHAR        "char"
+#define REGEX_POOL_FLOAT       "float"
+#define REGEX_POOL_INTEGRAL    "integral"
+#define REGEX_POOL_REPL        "repl"
+#define REGEX_POOL_WHITESPACE  "whitespace"
+#define REGEX_POOL_WORD        "word"
+
+// Preconstructed Expressions
+// By preconstructed I do not mean I generate the regex for each of these expressions.
+// This would prove much too heavy in terms of memory usage (the construction process
+// of NFA to DFA, at least at the moment, is fairly hefty). Instead, these are
+// strings that can be passed into the Regex constructor for simplicity sake.
+#define REGEX_PRE_CHAR         "[\\a\\U]"
+#define REGEX_PRE_FLOAT        "[+\\-]?(0|[1-9]\\d*)?(\\.\\d*)?"
+#define REGEX_PRE_INTEGRAL     "[+\\-]?(0|[1-9]\\d*)"
+#define REGEX_PRE_REPL         "\{\\A+\}"
+#define REGEX_PRE_WHITESPACE   "\\w+"
+#define REGEX_PRE_WORD         "\\A+"
 
 namespace sage
 {
@@ -79,15 +102,9 @@ namespace sage
             int find(std::string);
             bool matches(std::string, int=0);
 
-            // "Precompiled" Expressions
-            // By precompiled I do not mean I generate the regex for each of these expressions.
-            // This would prove much too heavy in terms of memory usage (the construction process
-            // of NFA to DFA, at least at the moment, is fairly hefty). Instead, these are
-            // strings that can be passed into the Regex constructor for simplicity sake.
-            static std::string FLOAT;
-            static std::string INTEGRAL;
-            static std::string WHITESPACE;
-            static std::string WORD;
+            // The following enables reuse of regexes over time by saving
+            // the regexes in a map for return later on.
+            static Regex& fromPool(std::string, std::string, int = 0);
 
         private:
 

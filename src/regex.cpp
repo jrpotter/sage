@@ -9,13 +9,29 @@
 using namespace sage;
 
 /**
- * Precompiled Expressions
+ * Pooling
  * ================================
  */
-std::string Regex::FLOAT      = "[+\\-]?(0|[1-9]\\d*)?(\\.\\d*)?";
-std::string Regex::INTEGRAL   = "[+\\-]?(0|[1-9]\\d*)";
-std::string Regex::WHITESPACE = "\\w";
-std::string Regex::WORD       = "\\A*";
+Regex& Regex::fromPool(std::string key, std::string expr, int i)
+{
+    static std::map<std::string, Regex> pool;
+
+    // Search for the key and check for a match. Otherwise we repeat with a modified key and continue the search.
+    // Note I add this somewhat convoluted means of continued search because our above map is ordered and I want 
+    // to avoid any potential clustering
+    auto it = pool.find(key);
+    if(it != pool.end()) {
+        Regex& r = it->second;
+        if(r.expr != expr) {
+            char prepend = static_cast<char>('a' + (expr.size() % 26));
+            return fromPool(prepend + key, expr, (i + 17) % 26);
+        }
+        return r;
+    }
+    
+    pool[key] = Regex(expr);
+    return pool[key];
+}
 
 /**
  * Exception Constructor

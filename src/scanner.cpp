@@ -32,9 +32,8 @@ Scanner::Scanner(std::istream& input, Regex delimiter)
  */
 int Scanner::nextInt()
 {
-    static Regex key(Regex::INTEGRAL);
-    std::string tmp = next(key);
-    return std::stoi(tmp.c_str());
+    Regex key = Regex::fromPool(REGEX_POOL_INTEGRAL, REGEX_PRE_INTEGRAL);
+    return std::stoi(next(key));
 }
 
 /**
@@ -45,7 +44,7 @@ int Scanner::nextInt()
  */
 char Scanner::nextChar()
 {
-    static Regex key("[\\a\\U]");
+    Regex key = Regex::fromPool(REGEX_POOL_CHAR, REGEX_PRE_CHAR);
     std::string tmp = next(key);
     if(tmp.empty()) {
         return -1;
@@ -62,9 +61,8 @@ char Scanner::nextChar()
  */
 double Scanner::nextDouble()
 {
-    static Regex key(Regex::FLOAT);
-    std::string tmp = next(key);
-    return std::stod(tmp);
+    Regex key = Regex::fromPool(REGEX_POOL_FLOAT, REGEX_PRE_FLOAT);
+    return std::stod(next(key));
 }
 
 /**
@@ -75,8 +73,7 @@ double Scanner::nextDouble()
  */
 std::string Scanner::nextWord()
 {
-    static Regex key(Regex::WORD);
-    return next(key);
+    return next(Regex::fromPool(REGEX_POOL_WORD, REGEX_PRE_WORD));
 }
 
 /**
@@ -148,16 +145,13 @@ std::string Scanner::readLine()
  * Checks if a character exists in the remainder of the stream.
  * Returns EOF if no character is found.
  */
-char Scanner::peekChar()
+char Scanner::peekChar(int pos)
 {
     long current = input.tellg();
-    try {
-        char tmp = nextChar();
-        input.seekg(current);
-        return tmp;
-    } catch(const std::invalid_argument& ia) {
-        return EOF;
-    }
+    input.seekg(current + pos);
+    char tmp = nextChar();
+    input.seekg(current);
+    return tmp;
 }
 
 /**

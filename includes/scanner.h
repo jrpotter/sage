@@ -37,7 +37,7 @@ namespace sage
             std::string readLine();
 
             // Peeking Methods
-            char peekChar();
+            char peekChar(int = 0);
 
             // Testing Methods
             bool hasNextInt();
