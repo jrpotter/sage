@@ -9,13 +9,29 @@
 using namespace sage;
 
 /**
+ * Exception Constructor
+ * ================================
+ */
+PEGException::PEGException(std::string response)
+    : response(response)
+{ }
+
+/**
+ * Exception Message
+ * ================================
+ */
+const char* PEGException::what() const noexcept
+{
+    return response.c_str();
+}
+
+/**
  * Constructor
  * ================================
  */
 PParser::PParser(std::string filename)
     : stream(filename, std::ifstream::in)
     , input(stream)
-    , arrowOperator("\\->")
 {
     if(stream.is_open()) {
         parse();
@@ -43,20 +59,30 @@ PParser::~PParser()
  */
 void PParser::parse()
 {
+    // These regexes are used to read in a custom PEG grammer.
+    // Refer to /grammars/arithmetic.peg for a more thorough explanation
+    // on the grammar. Note all other terms can be manipulated just
+    // by reading in the remainder of a line or reading in words.
+    static Regex arrowOperator("\\->");
+
+    // To begin with, we load in all nonterminals and construct the
+    // corresponding ASTs, as well as maintain the definitions
+    // corresponding to each nonterminal.
+    std::map<std::string, std::string> prototypes;
     while(!input.eof()) {
 
         // Reads in a comment and clears out line
         if(input.peekChar() == PPARSER_COMMENT) {
             input.readLine();
 
-        // Read in nonterminal and regex
+        // Reads in a PEG definition
         } else {
 
-            // Get nonterminal and check if its the starting word
+            // Read in the nonterminal, and check for a starting indicator
             std::string nonterminal = input.nextWord();
             if(input.peekChar() == PPARSER_START) {
                 if(!start.empty()) {
-                    // TODO: Throw error on invalid usage of "'"
+                    throw PEGException("Multiple starting nonterminals");
                 } else {
                     start = nonterminal;
                 }
@@ -64,9 +90,17 @@ void PParser::parse()
 
             // Read in the next set of expressions
             input.next(arrowOperator);
-            std::string definition = input.readLine();
+
+            // Lastly, read through the given definition and break up.
+            // The outer vector refers to the different options corresponding to
+            // a definition (separated via the '|' operator) while each nested
+            // vector refers to the actual...
+            table[nonterminal] = std::vector();
         }
+    }
 
-
+    // Must have a starting nonterminal
+    if(start.empty()) {
+        throw PEGException("No starting nonterminal specified.");
     }
 }

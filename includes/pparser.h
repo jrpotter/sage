@@ -1,7 +1,7 @@
 /**
  * pparser.h
  *
- * The following is a recursive descent parser for the simple PEG grammar
+ * The following is a simple parser for the simple PEG grammar
  * as specified in the different examples provided in the /grammars folder.
  * The resulting table is then used when parsing files according
  * to said PEG.
@@ -22,6 +22,16 @@
 
 namespace sage
 {
+    class PEGException : public std::exception
+    {
+        public:
+            PEGException(std::string);
+            virtual const char* what() const noexcept;
+
+        private:
+            std::string response;
+    };
+
     class PParser
     {
         public:
@@ -29,6 +39,8 @@ namespace sage
             ~PParser();
 
         private:
+
+            // Source to read from
             Scanner input;
             std::ifstream stream;
 
@@ -36,13 +48,7 @@ namespace sage
             // in parsing, while the table refers to how to continue parsing
             // the remaining of the stream.
             std::string start;
-            std::map<std::string, AST> table;
-
-            // These regexes are used to read in a custom PEG grammer.
-            // Refer to /grammars/arithmetic.peg for a more thorough explanation
-            // on the grammar. Note all other terms can be manipulated just
-            // by reading in the remainder of a line or reading in words.
-            Regex arrowOperator;
+            std::map<std::string, std::vector<std::string>> table;
 
             // Used to actually manipulate and read in the given file
             void parse();
