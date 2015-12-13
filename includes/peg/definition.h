@@ -14,12 +14,18 @@
 
 #include <string>
 
+#include "parser/scanner.h"
 #include "regex/regex.h"
 
 namespace sage
 {
     class Definition
     {
+        public:
+            Definition();
+            virtual ~Definition() = default;
+            virtual void read(Scanner&) final;
+
         protected:
 
             // Determines whether or not this element should be
@@ -31,6 +37,11 @@ namespace sage
                 REPEAT_OPTIONAL,
                 REPEAT_NONE
             } repeat;
+
+            // The following will run through and attempt to read in from
+            // the scanner the corresponding definition if possible. It
+            // will return whether or not it was successful.
+            virtual bool process(Scanner&) = 0;
     };
 }
 

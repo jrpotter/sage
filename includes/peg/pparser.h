@@ -20,22 +20,13 @@
 
 #include "exception/peg_exception.h"
 #include "parser/scanner.h"
-
-#define PPARSER_COMMENT '#'
-#define PPARSER_START   '\''
+#include "choices.h"
+#include "macro.h"
 
 namespace sage
 {
     class PParser
     {
-        // The t_choice typedef represents the series of choices a given
-        // nonterminal can equate to. The other vector represents tokens
-        // separated by the choice operator (i.e. "'") while each nested
-        // vector represents either a string (representing another nonterminal)
-        // or a regex (representing some primitive/token).
-        struct Definition;
-        using t_choice = std::vector<std::vector<Definition>>;
-
         public:
             PParser(std::string);
             ~PParser();
@@ -45,33 +36,15 @@ namespace sage
             // Source to read from
             std::ifstream stream;
 
-            // Tagged Union
-            // The following allows distinguishing between either deferring to another
-            // nonterminal or instead simply parsing in a specified token
-            struct Definition
-            {
-                enum { TAG_TERMINAL, TAG_NONTERMINAL } type;
-                union {
-                    Regex terminal;
-                    std::string nonterminal;
-                };
-
-                // Constructors
-                Definition(Regex);
-                Definition(std::string);
-                Definition(const Definition&);
-                ~Definition();
-            };
-
             // Expression table; start refers to the first nonterminal used
             // in parsing, while the table refers to how to continue parsing
             // the remaining of the stream.
             std::string start;
-            std::map<std::string, t_choice> table;
+            std::map<std::string, std::shared_ptr<Definition>> table;
 
             // Used to actually manipulate and read in the given file
             void parse(Scanner&);
-            t_choice parseDefinition(std::string);
+            std::shared_ptr<Definition> parseDefinition(std::string);
     };
 }
 

@@ -8,14 +8,16 @@
  *
  * Created by jrpotter (11/26/2015).
  */
-
 #ifndef SAGE_SCANNER_H
 #define SAGE_SCANNER_H
 
 #include <istream>
 #include <memory>
+#include <stack>
 
 #include "regex/regex.h"
+#include "scan_state.h"
+#include "string.h"
 
 namespace sage
 {
@@ -34,14 +36,24 @@ namespace sage
             std::string nextWord();
             std::string next(Regex);
             std::string readLine();
+            std::string readUntil(char);
 
             // Peeking Methods
             char peek(int=0);
+
+            // Checkpoints
+            // Allows returning back to a given state
+            void saveCheckpoint();
+            void restoreCheckpoint();
+            ScanState getCurrentState();
 
         private:
 
             // The input source the scanner will read from
             std::istream& input;
+
+            // Maintain position
+            std::stack<ScanState> states;
 
             // Represents the regex matching the separator between tokens
             Regex delimiter;

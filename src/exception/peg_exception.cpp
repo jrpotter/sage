@@ -13,8 +13,15 @@ using namespace sage;
  * ================================
  */
 PEGException::PEGException(std::string message)
-        : message(message)
+    : response(message)
 { }
+
+PEGException::PEGException(std::string message, unsigned int line, unsigned int column)
+{
+    std::stringstream ss(message);
+    ss << " at (line: " << line << ", column: " << column << ")";
+    response = ss.str();
+}
 
 /**
  * What
@@ -22,5 +29,5 @@ PEGException::PEGException(std::string message)
  */
 const char* PEGException::what() const noexcept
 {
-    return message.c_str();
+    return response.c_str();
 }

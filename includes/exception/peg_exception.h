@@ -9,6 +9,7 @@
 #define SAGE_PEG_EXCEPTION_H
 
 #include <exception>
+#include <sstream>
 #include <string>
 
 namespace sage
@@ -17,10 +18,11 @@ namespace sage
     {
         public:
             PEGException(std::string);
+            PEGException(std::string, unsigned int, unsigned int);
             virtual const char* what() const noexcept;
 
         private:
-            std::string message;
+            std::string response;
     };
 }
 

@@ -14,6 +14,7 @@ using namespace sage;
  */
 Scanner::Scanner(std::istream& input, std::string delimiter)
     : input(input)
+    , states({ ScanState(0, 1, 1) })
     , delimiter(Regex(delimiter))
 {
     // Ensure our token is at the front of the stream
@@ -83,20 +84,22 @@ std::string Scanner::nextWord()
  */
 std::string Scanner::next(Regex r)
 {
+    saveCheckpoint();
+
     // Read in input until next separator or end
     // This is necessary to avoid problems regarding the above comment before the function
     // signature. That is, we read until we encounter our delimiter and then verify the
     // token we just read in matches the passed regex. If not, we reset the inputstream back
     // to where it was.
     std::string token;
-    long current = input.tellg();
     while(input.peek() != EOF && !delimiter.matches(std::string(1, (char) input.peek()))) {
         token += input.get();
+        states.top().advance(token.back());
     }
 
     // Reset position, return empty string
     if(!r.matches(token)) {
-        input.seekg(current);
+        restoreCheckpoint();
         throw std::invalid_argument("Could not find specified regex.");
 
     // Otherwise parse content afterward for next character
@@ -120,7 +123,27 @@ std::string Scanner::readLine()
         throw std::invalid_argument("Could not extract line.");
     }
 
-    buffer.erase(buffer.find_last_not_of(" \n\r\t\v") + 1);
+    states.top().advance('\n');
+    buffer = rtrim(buffer);
+    clearDelimiterContent();
+    return buffer;
+}
+
+/**
+ * Read Until
+ * ================================
+ *
+ * The following is a convenience function used to read in characters until encountering
+ * the delimiter passed or EOF encountered.
+ */
+std::string Scanner::readUntil(char delim)
+{
+    std::string buffer;
+    while(input.peek() != EOF && (buffer.empty() || buffer.back() != delim)) {
+        buffer += input.get();
+        states.top().advance(buffer.back());
+    }
+
     clearDelimiterContent();
     return buffer;
 }
@@ -146,6 +169,27 @@ char Scanner::peek(int pos)
 }
 
 /**
+ * Checkpoint Methods
+ * ================================
+ */
+void Scanner::saveCheckpoint()
+{
+    states.push(states.top());
+    states.top().cursor = input.tellg();
+}
+
+void Scanner::restoreCheckpoint()
+{
+    states.pop();
+    input.seekg(states.top().cursor);
+}
+
+ScanState Scanner::getCurrentState()
+{
+    return states.top();
+}
+
+/**
  * Clear Delimiter Content
  * ================================
  *
@@ -158,5 +202,6 @@ void Scanner::clearDelimiterContent()
     std::string separator;
     while(input.peek() != EOF && delimiter.matches(separator + (char) input.peek())) {
         separator += input.get();
+        states.top().advance(separator.back());
     }
 }
