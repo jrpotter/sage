@@ -17,8 +17,14 @@ namespace sage
 {
     class Nonterminal : public Definition
     {
+        public:
+            Nonterminal(std::string);
+
+        protected:
+            bool process(Scanner&, std::map<std::string, std::shared_ptr<Definition>>&);
+
         private:
-            std::weak_ptr<Definition> reference;
+            std::string reference;
     };
 }
 

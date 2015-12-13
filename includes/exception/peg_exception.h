@@ -10,7 +10,6 @@
 
 #include <exception>
 #include <sstream>
-#include <string>
 
 namespace sage
 {

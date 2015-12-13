@@ -52,17 +52,19 @@ void PParser::parse(Scanner& input)
     // On any given line, the first two terminals should be the nonterminal
     // being defined and the arrow operator or we've encountered a comment.
     while(input.peek() != EOF) {
+
         if(input.peek() == PPARSER_COMMENT) {
             input.readLine();
         } else {
 
             // First read in nonterminal and find start if possible
             std::string nonterminal = input.next(markedWord);
-            if(nonterminal[nonterminal.length() - 1] == PPARSER_START) {
+            if(nonterminal.back() == PPARSER_START) {
                 if(start.empty()) {
                     start = nonterminal;
                 } else {
-                    throw PEGException("Multiple starting nonterminals", input.getLinePos(), input.getColumnPos());
+                    auto state = input.getCurrentState();
+                    throw PEGException("Multiple starting nonterminals", state.getLine(), state.getColumn());
                 }
             }
 
@@ -76,17 +78,5 @@ void PParser::parse(Scanner& input)
     if(start.empty()) {
         throw PEGException("No starting nonterminal specified");
     }
-
-}
-
-/**
- * Definition Parsing
- * ================================
- *
- * The following will parse the passed in definition and construct the
- * corresponding possibilities
- */
-std::shared_ptr<Definition> PParser::parseDefinition(std::string definition)
-{
 
 }

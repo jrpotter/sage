@@ -21,10 +21,16 @@ namespace sage
 {
     class Definition
     {
+        friend class Sequence;
+
         public:
             Definition();
             virtual ~Definition() = default;
-            virtual void read(Scanner&) final;
+
+            // The following will run through and attempt to read in from
+            // the scanner the corresponding definition if possible. It
+            // will return whether or not it was successful.
+            virtual bool process(Scanner&, std::map<std::string, std::shared_ptr<Definition>>&) = 0;
 
         protected:
 
@@ -38,10 +44,6 @@ namespace sage
                 REPEAT_NONE
             } repeat;
 
-            // The following will run through and attempt to read in from
-            // the scanner the corresponding definition if possible. It
-            // will return whether or not it was successful.
-            virtual bool process(Scanner&) = 0;
     };
 }
 

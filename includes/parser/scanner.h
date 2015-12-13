@@ -15,6 +15,7 @@
 #include <memory>
 #include <stack>
 
+#include "exception/scan_exception.h"
 #include "regex/regex.h"
 #include "scan_state.h"
 #include "string.h"
@@ -38,13 +39,14 @@ namespace sage
             std::string readLine();
             std::string readUntil(char);
 
-            // Peeking Methods
-            char peek(int=0);
+            // Direct Methods
+            char read();
+            char peek(int = 0);
 
             // Checkpoints
             // Allows returning back to a given state
             void saveCheckpoint();
-            void restoreCheckpoint();
+            ScanState restoreCheckpoint();
             ScanState getCurrentState();
 
         private:

@@ -23,7 +23,7 @@ namespace sage
             Choices(std::string);
 
         protected:
-            virtual bool process(Scanner&);
+            virtual bool process(Scanner&, std::map<std::string, std::shared_ptr<Definition>>&);
 
         private:
             std::vector<std::shared_ptr<Definition>> options;

@@ -5,6 +5,7 @@
  */
 #include "memory.h"
 #include "parser/scanner.h"
+#include <iostream>
 
 using namespace sage;
 
@@ -84,30 +85,52 @@ std::string Scanner::nextWord()
  */
 std::string Scanner::next(Regex r)
 {
-    saveCheckpoint();
+    // We manually keep track of the current state and revert if necessary
+    // Note the size of the columns stack will correspond to the number of lines read
+    // during this function call, while the actual values maintains the last column
+    // of the corresponding line read
+    long cursor = input.tellg();
+    std::stack<unsigned int> columns({1});
 
     // Read in input until next separator or end
     // This is necessary to avoid problems regarding the above comment before the function
     // signature. That is, we read until we encounter our delimiter and then verify the
-    // token we just read in matches the passed regex. If not, we reset the inputstream back
-    // to where it was.
+    // token we just read in matches (at least in part) with the passed regex.
     std::string token;
     while(input.peek() != EOF && !delimiter.matches(std::string(1, (char) input.peek()))) {
+        cursor += 1;
         token += input.get();
-        states.top().advance(token.back());
+        if(token.back() == '\n') {
+            columns.push(1);
+        } else {
+            columns.top() += 1;
+        }
     }
 
-    // Reset position, return empty string
-    if(!r.matches(token)) {
-        restoreCheckpoint();
-        throw std::invalid_argument("Could not find specified regex.");
-
-    // Otherwise parse content afterward for next character
-    } else {
-        clearDelimiterContent();
+    // We now work backwards through the string, testing for matches with the largest token possible
+    // We revert the state if necessary, and then save the current state to match the changes accordingly
+    std::string token_copy = token;
+    while(!token.empty()) {
+        if(r.matches(token)) {
+            unsigned int next_line = states.top().getLine() + (int) columns.size() - 1;
+            unsigned int next_column = (columns.size() == 1) ? states.top().getColumn() + columns.top() : columns.top();
+            states.top() = ScanState(cursor, next_line, next_column);
+            clearDelimiterContent();
+            return token;
+        } else {
+            token.pop_back();
+            input.seekg(--cursor);
+            if(columns.top() == 1) {
+                columns.pop();
+            } else {
+                columns.top() -= 1;
+            }
+        }
     }
 
-    return token;
+    // Could not find a match, so return error
+    std::string message = "Could not match token " + token_copy + " with regex";
+    throw ScanException(message, states.top().getLine(), states.top().getColumn());
 }
 
 /**
@@ -120,7 +143,8 @@ std::string Scanner::readLine()
 {
     std::string buffer;
     if(!std::getline(input, buffer)) {
-        throw std::invalid_argument("Could not extract line.");
+        auto state = getCurrentState();
+        throw ScanException("Could not extract line", state.getLine(), state.getColumn());
     }
 
     states.top().advance('\n');
@@ -146,6 +170,21 @@ std::string Scanner::readUntil(char delim)
 
     clearDelimiterContent();
     return buffer;
+}
+
+/**
+ * Read
+ * ================================
+ *
+ * Checks if a character exists in the remainder of the stream.
+ * And reads in this character if this is the case.
+ */
+char Scanner::read()
+{
+    char buffer[1];
+    input.read(buffer, 1);
+    states.top().advance(buffer[0]);
+    return buffer[0];
 }
 
 /**
@@ -178,10 +217,12 @@ void Scanner::saveCheckpoint()
     states.top().cursor = input.tellg();
 }
 
-void Scanner::restoreCheckpoint()
+ScanState Scanner::restoreCheckpoint()
 {
+    ScanState top = states.top();
     states.pop();
     input.seekg(states.top().cursor);
+    return top;
 }
 
 ScanState Scanner::getCurrentState()

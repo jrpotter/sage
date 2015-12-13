@@ -10,7 +10,6 @@
 #define SAGE_REGEX_EXCEPTION_H
 
 #include <exception>
-#include <string>
 #include <sstream>
 
 namespace sage

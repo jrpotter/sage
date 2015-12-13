@@ -17,8 +17,14 @@ namespace sage
 {
     class Terminal : public Definition
     {
+        public:
+            Terminal(std::string);
+
+        protected:
+            bool process(Scanner&, std::map<std::string, std::shared_ptr<Definition>>&);
+
         private:
-            Regex terminal;
+            Regex value;
     };
 }
 

@@ -44,7 +44,6 @@ namespace sage
 
             // Used to actually manipulate and read in the given file
             void parse(Scanner&);
-            std::shared_ptr<Definition> parseDefinition(std::string);
     };
 }
 

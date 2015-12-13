@@ -30,10 +30,10 @@ Choices::Choices(std::string definition)
  * According to PEG specifications, the following will try to process
  * each choice until one is successful.
  */
-bool Choices::process(Scanner& s)
+bool Choices::process(Scanner& s, std::map<std::string, std::shared_ptr<Definition>>& table)
 {
     for(auto option : options) {
-        if(option->process(s)) {
+        if(option->process(s, table)) {
             return true;
         }
     }
