@@ -19,7 +19,9 @@ Choices::Choices(std::string definition)
 {
     auto defs = split(trim(definition), "||");
     for(auto def : defs) {
-        options.push_back(std::make_shared<Sequence>(def));
+        std::stringstream tmp(def);
+        Scanner tmp_scanner(tmp);
+        options.push_back(std::make_shared<Sequence>(tmp_scanner));
     }
 }
 

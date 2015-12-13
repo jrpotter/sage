@@ -158,16 +158,25 @@ std::string Scanner::readLine()
  * ================================
  *
  * The following is a convenience function used to read in characters until encountering
- * the delimiter passed or EOF encountered.
+ * the delimiter passed or EOF encountered. Note that escaped characters that would otherwise
+ * match the delimiter are ignored.
  */
 std::string Scanner::readUntil(char delim)
 {
+    // Build up buffer until end
     std::string buffer;
-    while(input.peek() != EOF && (buffer.empty() || buffer.back() != delim)) {
+    while(input.peek() != EOF && input.peek() != delim) {
         buffer += input.get();
         states.top().advance(buffer.back());
+        if(buffer.back() == '\\' && input.peek() == delim) {
+            buffer.back() = (char) input.get();
+            states.top().advance(buffer.back());
+        }
     }
 
+    // Read in delimiter
+    buffer += input.get();
+    states.top().advance(buffer.back());
     clearDelimiterContent();
     return buffer;
 }

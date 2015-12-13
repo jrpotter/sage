@@ -13,34 +13,37 @@ using namespace sage;
  *
  * Must read in the corresponding values and build up sequence.
  */
-Sequence::Sequence(std::string definition)
+Sequence::Sequence(Scanner& definition)
 {
-    std::stringstream ss(definition);
-    Scanner s(ss);
+    bool finished_sub = false;
+    while(definition.peek() != EOF && !finished_sub) {
 
-    while(s.peek() != EOF) {
-
-        switch(s.peek()) {
+        switch(definition.peek()) {
 
             // Encountered a regex; read until delimiter encountered
             case PPARSER_TERMINAL_DELIM: {
-                s.nextChar();
-                std::string term = s.readUntil(PPARSER_TERMINAL_DELIM);
+                definition.read();
+                std::string term = definition.readUntil(PPARSER_TERMINAL_DELIM);
                 order.emplace_back(std::make_shared<Terminal>(term.substr(0, term.length() - 1)));
                 break;
             }
 
+            // Encountered the end of a subexpression; just exit
+            case PPARSER_SUB_END:
+                definition.read();
+                finished_sub = true;
+                continue;
+
             // Encountered a subexpression
             case PPARSER_SUB_START: {
-                s.nextChar();
-                std::string sub = s.readUntil(PPARSER_SUB_END);
-                order.emplace_back(std::make_shared<Choices>(sub.substr(0, sub.length() - 1)));
+                definition.read();
+                order.emplace_back(std::make_shared<Sequence>(definition));
                 break;
             }
 
             // Encountered a nonterminal
             default: {
-                std::string nonterminal = s.nextWord();
+                std::string nonterminal = definition.nextWord();
                 order.emplace_back(std::make_shared<Nonterminal>(nonterminal));
                 break;
             }
@@ -48,21 +51,20 @@ Sequence::Sequence(std::string definition)
         }
 
         // Determine repetition if possible
-        if(s.peek() != EOF) {
-            switch(s.peek()) {
+        if(definition.peek() != EOF) {
+            definition.saveCheckpoint();
+            switch(definition.read()) {
                 case PPARSER_KLEENE_STAR:
-                    s.nextChar();
                     order.back()->repeat = REPEAT_KLEENE_STAR;
                     break;
                 case PPARSER_KLEENE_PLUS:
-                    s.nextChar();
                     order.back()->repeat = REPEAT_KLEENE_PLUS;
                     break;
                 case PPARSER_KLEENE_OPTIONAL:
-                    s.nextChar();
                     order.back()->repeat = REPEAT_OPTIONAL;
                     break;
                 default:
+                    definition.restoreCheckpoint();
                     break;
             }
         }

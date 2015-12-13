@@ -20,7 +20,7 @@ namespace sage
     class Sequence : public Definition
     {
         public:
-            Sequence(std::string);
+            Sequence(Scanner&);
 
         protected:
             virtual bool process(Scanner&, std::map<std::string, std::shared_ptr<Definition>>&);

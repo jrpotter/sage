@@ -22,4 +22,4 @@
 Expression' -> Sum
 Sum         -> Product ("[+\-]" Product)*
 Product     -> Value ("[*/]" Value)*
-Value       -> "[0-9]+" || "\(" Expression "\)"
+Value       -> "[0-9\"]+" || "\(" Expression "\)"
