@@ -10,23 +10,6 @@
 using namespace sage;
 
 /**
- * Exception Constructor
- * ================================
- */
-PEGException::PEGException(std::string response)
-    : response(response)
-{ }
-
-/**
- * Exception Message
- * ================================
- */
-const char* PEGException::what() const noexcept
-{
-    return response.c_str();
-}
-
-/**
  * Definition Constructor
  * ================================
  */

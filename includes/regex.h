@@ -25,14 +25,14 @@
 #ifndef SAGE_REGEX_H
 #define SAGE_REGEX_H
 
+#include <algorithm>
 #include <list>
 #include <limits>
 #include <string>
 #include <sstream>
-#include <algorithm>
-#include <exception>
 
 #include "dfa.h"
+#include "exception.h"
 
 // Regex Operators
 // These are used in the construction of regexes
@@ -75,16 +75,6 @@
 
 namespace sage
 {
-    class InvalidRegularExpression : public std::exception
-    {
-        public:
-            InvalidRegularExpression(std::string, char, long);
-            virtual const char* what() const noexcept;
-
-        private:
-            std::string response;
-    };
-
     class Regex
     {
         public:

@@ -1,10 +1,14 @@
 /**
  * pparser.h
  *
- * The following is a simple parser for the simple PEG grammar
- * as specified in the different examples provided in the /grammars folder.
- * The resulting table is then used when parsing files according
- * to said PEG.
+ * The following is a simple parser for the simple PEG grammar as specified in the different
+ * examples provided in the /grammars folder. The resulting table is then used when parsing files
+ * according to said PEG.
+ *
+ * Though it would be nice to be able to construct another DFA-like automaton to traverse when
+ * beginning to parse files, I'm not entirely sure how this would work in regards to recursive
+ * definitions. Since backtracking needs to be employed anyways, I simply encapsulate each
+ * definition and apply each one.
  *
  * Created by jrpotter (12/05/2015).
  */
@@ -12,7 +16,6 @@
 #ifndef SAGE_PPARSER_H
 #define SAGE_PPARSER_H
 
-#include <new>
 #include <fstream>
 
 #include "ast.h"
@@ -24,15 +27,7 @@
 
 namespace sage
 {
-    class PEGException : public std::exception
-    {
-        public:
-            PEGException(std::string);
-            virtual const char* what() const noexcept;
 
-        private:
-            std::string response;
-    };
 
     class PParser
     {

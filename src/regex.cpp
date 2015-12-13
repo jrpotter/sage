@@ -5,7 +5,6 @@
  */
 
 #include "regex.h"
-#include <iostream>
 
 using namespace sage;
 
@@ -35,43 +34,6 @@ Regex& Regex::fromPool(std::string key, std::string expr, int i)
 }
 
 /**
- * Exception Constructor
- * ================================
- */
-InvalidRegularExpression::InvalidRegularExpression(std::string message, char problem, long index)
-{
-    std::stringstream ss;
-
-    // First format string
-    char* buffer = new char[message.size()];
-    int result = snprintf(buffer, sizeof(char) * message.size(), message.c_str(), problem);
-    if(result < sizeof(char) * message.size()) {
-        ss << buffer;
-        if(index == EOF) {
-            ss << " by end of expression.";
-        } else {
-            ss << " at position " << index << '.';
-        }
-        ss << std::endl;
-    } else {
-        ss << "An error occurred with Sage." << std::endl;
-    }
-
-    // Cleanup
-    delete[] buffer;
-    response = ss.str();
-}
-
-/**
- * Exception Message
- * ================================
- */
-const char* InvalidRegularExpression::what() const noexcept
-{
-    return response.c_str();
-}
-
-/**
  * Constructor
  * ================================
  *
@@ -83,8 +45,6 @@ const char* InvalidRegularExpression::what() const noexcept
  * at the 0th index of our vector, and "b" is the name of the regex at the 1st index.
  * If the same named regex is later found, it refers to the element already mapped
  * to and not the next indexed value.
- *
- * TODO: Bracketed expressions
  */
 Regex::Regex(std::string expr)
 {
