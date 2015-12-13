@@ -14,66 +14,52 @@ using namespace sage;
  * ================================
  */
 Scanner::Scanner(std::istream& input, std::string delimiter)
-    : Scanner(input, Regex(delimiter))
-{ }
-
-Scanner::Scanner(std::istream& input, Regex delimiter)
-    : input(input), delimiter(delimiter)
+    : input(input)
+    , delimiter(Regex(delimiter))
 {
     // Ensure our token is at the front of the stream
     clearDelimiterContent();
 }
 
 /**
- * Next Int
+ * Next Methods
  * ================================
  *
- * Reads in an integer and converts it properly.
+ * The following methods will, without checking, reads in the next token
+ * (as distinguished by the delimiter) and attempts to convert it to
+ * the corresponding type. If this fails in any case, an exception is
+ * thrown.
  */
 int Scanner::nextInt()
 {
-    Regex key = Regex::fromPool(REGEX_POOL_INTEGRAL, REGEX_PRE_INTEGRAL);
+    Regex key = Regex::fromPool(REGEX_POOL_INTEGRAL, REGEX_EXPR_INTEGRAL);
     return std::stoi(next(key));
 }
 
-/**
- * Next Char
- * ================================
- *
- * Reads in a single character.
- */
 char Scanner::nextChar()
 {
-    Regex key = Regex::fromPool(REGEX_POOL_CHAR, REGEX_PRE_CHAR);
+    Regex key = Regex::fromPool(REGEX_POOL_CHAR, REGEX_EXPR_CHAR);
     std::string tmp = next(key);
-    if(tmp.empty()) {
-        return -1;
-    }
-
     return tmp[0];
 }
 
-/**
- * Next Double
- * ================================
- *
- * Reads in a double and converts it properly.
- */
+char Scanner::nextLetter()
+{
+    Regex key = Regex::fromPool(REGEX_POOL_LETTER, REGEX_EXPR_LETTER);
+    std::string tmp = next(key);
+    return tmp[0];
+}
+
 double Scanner::nextDouble()
 {
-    Regex key = Regex::fromPool(REGEX_POOL_FLOAT, REGEX_PRE_FLOAT);
+    Regex key = Regex::fromPool(REGEX_POOL_FLOAT, REGEX_EXPR_FLOAT);
     return std::stod(next(key));
 }
 
-/**
- * Next Word
- * ================================
- *
- * Reads in a word and converts it properly.
- */
 std::string Scanner::nextWord()
 {
-    return next(Regex::fromPool(REGEX_POOL_WORD, REGEX_PRE_WORD));
+    Regex key = Regex::fromPool(REGEX_POOL_WORD, REGEX_EXPR_WORD);
+    return next(key);
 }
 
 /**
@@ -112,7 +98,7 @@ std::string Scanner::next(Regex r)
     // Reset position, return empty string
     if(!r.matches(token)) {
         input.seekg(current);
-        throw std::invalid_argument("Could not find specified regex");
+        throw std::invalid_argument("Could not find specified regex.");
 
     // Otherwise parse content afterward for next character
     } else {
@@ -131,110 +117,33 @@ std::string Scanner::next(Regex r)
 std::string Scanner::readLine()
 {
     std::string buffer;
-    if(std::getline(input, buffer)) {
-        return "";
+    if(!std::getline(input, buffer)) {
+        throw std::invalid_argument("Could not extract line.");
     }
 
+    buffer.erase(buffer.find_last_not_of(" \n\r\t\v") + 1);
+    clearDelimiterContent();
     return buffer;
 }
 
 /**
- * Peek Char
+ * Peek
  * ================================
  *
  * Checks if a character exists in the remainder of the stream.
+ * This will seek to the desired location and then look for a
+ * character not corresponding to the delimiter, unless @force
+ * is set to true.
+ *
  * Returns EOF if no character is found.
  */
-char Scanner::peekChar(int pos)
+char Scanner::peek(int pos)
 {
     long current = input.tellg();
     input.seekg(current + pos);
-    char tmp = nextChar();
+    char tmp = (char) input.peek();
     input.seekg(current);
     return tmp;
-}
-
-/**
- * Has Next Int
- * ================================
- *
- * Checks if an integer exists in the remainder of the stream.
- */
-bool Scanner::hasNextInt()
-{
-    long current = input.tellg();
-    try {
-        int tmp = nextInt();
-        input.seekg(current);
-        return true;
-    } catch(const std::invalid_argument& ia) {
-        return false;
-    }
-}
-
-/**
- * Has Next Char
- * ================================
- *
- * Checks if a character exists in the remainder of the stream.
- */
-bool Scanner::hasNextChar()
-{
-    long current = input.tellg();
-    try {
-        char tmp = nextChar();
-        input.seekg(current);
-        return true;
-    } catch(const std::invalid_argument& ia) {
-        return false;
-    }
-}
-
-/**
- * Has Next Double
- * ================================
- *
- * Checks if a double exists in the remainder of the stream.
- */
-bool Scanner::hasNextDouble()
-{
-    long current = input.tellg();
-    try {
-        double tmp = nextDouble();
-        input.seekg(current);
-        return true;
-    } catch(const std::invalid_argument& ia) {
-        return false;
-    }
-}
-
-/**
- * Has Next
- * ================================
- *
- * Checks if the passed regex exists in the remainder of the stream.
- */
-bool Scanner::hasNext(Regex r)
-{
-    long current = input.tellg();
-    try {
-        std::string tmp = next(r);
-        input.seekg(current);
-        return true;
-    } catch(const std::invalid_argument& ia) {
-        return false;
-    }
-}
-
-/**
- * EOF
- * ================================
- *
- * Checks if end of stream has been reached.
- */
-bool Scanner::eof()
-{
-    return (input.peek() == EOF);
 }
 
 /**

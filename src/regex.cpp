@@ -5,6 +5,7 @@
  */
 
 #include "regex.h"
+#include <iostream>
 
 using namespace sage;
 
@@ -28,7 +29,7 @@ Regex& Regex::fromPool(std::string key, std::string expr, int i)
         }
         return r;
     }
-    
+
     pool[key] = Regex(expr);
     return pool[key];
 }
@@ -342,6 +343,7 @@ std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss) const
     // settle on the idea that it is 'undefined' since what's an empty range mean anyways?
     if(components.size() > 0) {
         head->concatenate(collapseNFAs(components));
+        head->concatenate(std::make_shared<NFA>());
     }
 
     return head;

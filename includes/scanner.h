@@ -3,7 +3,6 @@
  *
  * Note the scanner is a wrapper around an istream object. As such, it is important
  * the stream the scanner is referring to stays in memory during the usage of the scanner.
- *
  * The scanner will read in characters from the stream according to the regular expression
  * being used to search.
  *
@@ -25,26 +24,19 @@ namespace sage
         public:
 
             // Constructors
-            Scanner(std::istream&, std::string="\\s+");
-            Scanner(std::istream&, Regex);
+            Scanner(std::istream&, std::string=REGEX_EXPR_WHITESPACE);
 
             // Scanning Methods
             int nextInt();
             char nextChar();
+            char nextLetter();
             double nextDouble();
             std::string nextWord();
             std::string next(Regex);
             std::string readLine();
 
             // Peeking Methods
-            char peekChar(int = 0);
-
-            // Testing Methods
-            bool hasNextInt();
-            bool hasNextChar();
-            bool hasNextDouble();
-            bool hasNext(Regex);
-            bool eof();
+            char peek(int=0);
 
         private:
 

@@ -12,6 +12,7 @@
 #ifndef SAGE_PPARSER_H
 #define SAGE_PPARSER_H
 
+#include <new>
 #include <fstream>
 
 #include "ast.h"
@@ -41,7 +42,7 @@ namespace sage
         // vector represents either a string (representing another nonterminal)
         // or a regex (representing some primitive/token).
         struct Definition;
-        typedef std::vector<std::vector<Definition>> t_choice;
+        using t_choice = std::vector<std::vector<Definition>>;
 
         public:
             PParser(std::string);
@@ -50,7 +51,6 @@ namespace sage
         private:
 
             // Source to read from
-            Scanner input;
             std::ifstream stream;
 
             // Tagged Union
@@ -58,11 +58,17 @@ namespace sage
             // nonterminal or instead simply parsing in a specified token
             struct Definition
             {
-                enum { TAG_REGEX, TAG_NONTERMINAL } type = 0;
+                enum { TAG_TERMINAL, TAG_NONTERMINAL } type;
                 union {
                     Regex terminal;
                     std::string nonterminal;
-                } value;
+                };
+
+                // Constructors
+                Definition(Regex);
+                Definition(std::string);
+                Definition(const Definition&);
+                ~Definition();
             };
 
             // Expression table; start refers to the first nonterminal used
@@ -72,7 +78,7 @@ namespace sage
             std::map<std::string, t_choice> table;
 
             // Used to actually manipulate and read in the given file
-            void parse();
+            void parse(Scanner&);
             t_choice parseDefinition(std::string);
     };
 }

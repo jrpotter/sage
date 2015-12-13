@@ -56,6 +56,7 @@
 #define REGEX_POOL_FLOAT       "float"
 #define REGEX_POOL_INTEGRAL    "integral"
 #define REGEX_POOL_REPL        "repl"
+#define REGEX_POOL_LETTER      "letter"
 #define REGEX_POOL_WHITESPACE  "whitespace"
 #define REGEX_POOL_WORD        "word"
 
@@ -64,12 +65,13 @@
 // This would prove much too heavy in terms of memory usage (the construction process
 // of NFA to DFA, at least at the moment, is fairly hefty). Instead, these are
 // strings that can be passed into the Regex constructor for simplicity sake.
-#define REGEX_PRE_CHAR         "[\\a\\U]"
-#define REGEX_PRE_FLOAT        "[+\\-]?(0|[1-9]\\d*)?(\\.\\d*)?"
-#define REGEX_PRE_INTEGRAL     "[+\\-]?(0|[1-9]\\d*)"
-#define REGEX_PRE_REPL         "\{\\A+\}"
-#define REGEX_PRE_WHITESPACE   "\\w+"
-#define REGEX_PRE_WORD         "\\A+"
+#define REGEX_EXPR_CHAR         "."
+#define REGEX_EXPR_FLOAT        "[+\\-]?(0|[1-9]\\d*)?(\\.\\d*)?"
+#define REGEX_EXPR_INTEGRAL     "[+\\-]?(0|[1-9]\\d*)"
+#define REGEX_EXPR_LETTER       "[\\a\\U]"
+#define REGEX_EXPR_REPL         "{\\A+}"
+#define REGEX_EXPR_WHITESPACE   "\\s+"
+#define REGEX_EXPR_WORD         "\\A+"
 
 namespace sage
 {
