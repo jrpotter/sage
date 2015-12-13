@@ -32,7 +32,7 @@
 #include <sstream>
 
 #include "dfa.h"
-#include "exception.h"
+#include "exception/regex_exception.h"
 
 // Regex Operators
 // These are used in the construction of regexes

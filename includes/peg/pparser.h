@@ -18,17 +18,14 @@
 
 #include <fstream>
 
-#include "ast.h"
-#include "regex.h"
-#include "scanner.h"
+#include "exception/peg_exception.h"
+#include "parser/scanner.h"
 
 #define PPARSER_COMMENT '#'
 #define PPARSER_START   '\''
 
 namespace sage
 {
-
-
     class PParser
     {
         // The t_choice typedef represents the series of choices a given

@@ -4,7 +4,7 @@
  * Created by jrpotter (11/26/2015).
  */
 
-#include "dfa.h"
+#include "regex/dfa.h"
 
 using namespace sage;
 

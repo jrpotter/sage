@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "pparser.h"
+#include "peg/pparser.h"
 
 using namespace std;
 using namespace sage;

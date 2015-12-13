@@ -4,8 +4,7 @@
  * Created by jrpotter (11/26/2015).
  */
 #include "memory.h"
-#include "scanner.h"
-#include <iostream>
+#include "parser/scanner.h"
 
 using namespace sage;
 

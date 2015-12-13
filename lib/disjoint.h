@@ -16,10 +16,10 @@
 #define SAGE_DISJOINT_H
 
 #include <functional>
-#include <memory>
-#include <vector>
 #include <map>
+#include <memory>
 #include <set>
+#include <vector>
 
 namespace sage
 {

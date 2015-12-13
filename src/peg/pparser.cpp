@@ -4,8 +4,7 @@
  * Created by jrpotter (12/05/2015).
  */
 
-#include "pparser.h"
-#include <iostream>
+#include "peg/pparser.h"
 
 using namespace sage;
 
@@ -150,7 +149,6 @@ PParser::t_choice PParser::parseDefinition(std::string definition)
             // Nonterminal; simply read in this expression
             case REGEX_REPL_START: {
                 Regex repl = Regex::fromPool(REGEX_POOL_REPL, REGEX_EXPR_REPL);
-                std::cout << def_scanner.next(repl);
                 Definition tmp(def_scanner.next(repl));
                 choices.back().push_back(tmp);
                 break;

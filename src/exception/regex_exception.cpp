@@ -1,30 +1,15 @@
-//
-// Created by jrpotter on 12/13/15.
-//
+/**
+ * regex_exception.cpp
+ *
+ * Created by jrpotter (12/13/2015).
+ */
 
-#include "exception.h"
+#include "exception/regex_exception.h"
 
 using namespace sage;
 
 /**
- * PEGException Constructor
- * ================================
- */
-PEGException::PEGException(std::string message)
-    : message(message)
-{ }
-
-/**
- * PEGException What
- * ================================
- */
-const char* PEGException::what() const noexcept
-{
-    return message.c_str();
-}
-
-/**
- * InvalidRegularExpression Constructor
+ * Constructor
  * ================================
  */
 InvalidRegularExpression::InvalidRegularExpression(std::string message, char problem, long index)
@@ -52,7 +37,7 @@ InvalidRegularExpression::InvalidRegularExpression(std::string message, char pro
 }
 
 /**
- * InvalidRegularExpression What
+ * What
  * ================================
  */
 const char* InvalidRegularExpression::what() const noexcept

@@ -4,7 +4,7 @@
  * Created by jrpotter (11/26/2015).
  */
 
-#include "regex.h"
+#include "regex/regex.h"
 
 using namespace sage;
 

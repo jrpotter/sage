@@ -15,7 +15,7 @@
 #include <istream>
 #include <memory>
 
-#include "regex.h"
+#include "regex/regex.h"
 
 namespace sage
 {

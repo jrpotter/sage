@@ -11,11 +11,11 @@
 #ifndef SAGE_AUTOMATON_H
 #define SAGE_AUTOMATON_H
 
-#include <set>
 #include <map>
-#include <vector>
-#include <string>
 #include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "memory.h"
 #include "interval.h"
