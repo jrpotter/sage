@@ -1,10 +1,10 @@
 /**
- * ptoken.cpp
+ * peg_token.cpp
  *
  * Created by jrpotter (12/13/2015).
  */
 
-#include "peg/ptoken.h"
+#include "Parser/PEGToken.h"
 
 using namespace sage;
 
@@ -14,7 +14,7 @@ using namespace sage;
  *
  * The default constructor is necessary for inclusion in the STL.
  */
-PToken::PToken()
+PEGToken::PEGToken()
     : tag(TAG_NONE)
 { }
 
@@ -24,8 +24,8 @@ PToken::PToken()
  *
  * The following recursively builds the tokens.
  */
-PToken::PToken(Scanner& definition)
-    : PToken(TAG_CHOICES)
+PEGToken::PEGToken(Scanner& definition)
+    : PEGToken(TAG_CHOICES)
 {
     // Used to determine if we should read in the character from input
     Regex letter = Regex::fromPool(REGEX_POOL_LETTER, REGEX_EXPR_LETTER);
@@ -48,18 +48,18 @@ PToken::PToken(Scanner& definition)
             case PPARSER_TERMINAL_DELIM: {
                 std::string term = definition.readUntil(PPARSER_TERMINAL_DELIM);
                 term.pop_back(); // Remove the trailing delimiter character
-                order.back()->order.emplace_back(std::make_shared<PToken>(term, TAG_TERMINAL));
+                order.back()->order.emplace_back(std::make_shared<PEGToken>(term, TAG_TERMINAL));
                 break;
             }
 
             // Move to next sequence if possible
             case PPARSER_CHOOSE:
-                order.emplace_back(std::make_shared<PToken>(TAG_SEQUENCE));
+                order.emplace_back(std::make_shared<PEGToken>(TAG_SEQUENCE));
                 break;
 
             // Recursively build up the next choice
             case PPARSER_SUB_START:
-                order.back()->order.emplace_back(std::make_shared<PToken>(definition));
+                order.back()->order.emplace_back(std::make_shared<PEGToken>(definition));
                 break;
 
             // Break out of next choice
@@ -83,7 +83,7 @@ PToken::PToken(Scanner& definition)
 
             // Add nonterminal
             default: {
-                order.back()->order.emplace_back(std::make_shared<PToken>(definition.nextWord(), TAG_NONTERMINAL));
+                order.back()->order.emplace_back(std::make_shared<PEGToken>(definition.nextWord(), TAG_NONTERMINAL));
                 break;
             }
 
@@ -107,18 +107,18 @@ PToken::PToken(Scanner& definition)
  * member of the element will not make sense, since the operator = is actually
  * a member of a given object.
  */
-PToken::PToken(PTOKEN_TAG tag)
+PEGToken::PEGToken(PTOKEN_TAG tag)
     : tag(tag)
     , repeat(REPEAT_NONE)
     , order({})
 {
     // No choice should have an empty set of sequences
     if(tag == TAG_CHOICES) {
-        order.emplace_back(std::make_shared<PToken>(TAG_SEQUENCE));
+        order.emplace_back(std::make_shared<PEGToken>(TAG_SEQUENCE));
     }
 }
 
-PToken::PToken(std::string expr, PTOKEN_TAG tag)
+PEGToken::PEGToken(std::string expr, PTOKEN_TAG tag)
     : tag(tag)
     , repeat(REPEAT_NONE)
 {
@@ -134,7 +134,7 @@ PToken::PToken(std::string expr, PTOKEN_TAG tag)
  * Destructor
  * ================================
  */
-PToken::~PToken()
+PEGToken::~PEGToken()
 {
     using namespace std;
 
@@ -144,7 +144,7 @@ PToken::~PToken()
         nonterminal.~string();
     } else if(tag != TAG_NONE) {
         using namespace std;
-        order.~vector<std::shared_ptr<PToken>>();
+        order.~vector<std::shared_ptr<PEGToken>>();
     }
 }
 
@@ -152,7 +152,7 @@ PToken::~PToken()
  * Process
  * ================================
  */
-bool PToken::process(Scanner& s, std::map<std::string, PToken>& table)
+bool PEGToken::process(Scanner& s, std::map<std::string, PEGToken>& table)
 {
     switch(tag) {
 

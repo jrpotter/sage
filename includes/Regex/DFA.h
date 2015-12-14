@@ -18,7 +18,7 @@
 #define SAGE_DFA_H
 
 #include "disjoint.h"
-#include "nfa.h"
+#include "NFA.h"
 
 namespace sage
 {

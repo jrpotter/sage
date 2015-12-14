@@ -4,7 +4,7 @@
  * Created by jrpotter (11/26/2015).
  */
 
-#include "regex/nfa.h"
+#include "Regex/NFA.h"
 
 using namespace sage;
 
@@ -98,7 +98,7 @@ void NFA::swap(NFA& a, NFA& b)
  * ================================
  *
  * Makes @tail immediately accessible from the head. This should generally be
- * called by an empty NFA when allowing different options down a regex chain.
+ * called by an empty NFA when allowing different options down a Regex chain.
  */
 void NFA::join(std::shared_ptr<NFA> tail)
 {

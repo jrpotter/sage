@@ -4,7 +4,7 @@
  * Created by jrpotter (11/26/2015).
  */
 
-#include "parser/scan_state.h"
+#include "Parser/ScanState.h"
 
 using namespace sage;
 

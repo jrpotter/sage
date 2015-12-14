@@ -30,9 +30,9 @@
 #include <limits>
 #include <sstream>
 
-#include "dfa.h"
+#include "DFA.h"
 #include "macro.h"
-#include "regex_exception.h"
+#include "RegexException.h"
 
 namespace sage
 {

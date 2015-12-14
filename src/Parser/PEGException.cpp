@@ -4,7 +4,7 @@
  * Created by jrpotter (12/13/2015).
  */
 
-#include "peg/peg_exception.h"
+#include "Parser/PEGException.h"
 
 using namespace sage;
 

@@ -17,7 +17,7 @@
 #ifndef SAGE_NFA_H
 #define SAGE_NFA_H
 
-#include "automaton.h"
+#include "Automaton.h"
 #include "memory.h"
 
 namespace sage

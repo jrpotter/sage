@@ -22,7 +22,7 @@
 #define REGEX_WILDCARD            '.'
 
 // Pool Keys
-// Used to reference static keys in the regex pool
+// Used to reference static keys in the Regex pool
 #define REGEX_POOL_CHAR           "char"
 #define REGEX_POOL_FLOAT          "float"
 #define REGEX_POOL_INTEGRAL       "integral"
@@ -32,7 +32,7 @@
 #define REGEX_POOL_WORD           "word"
 
 // Preconstructed Expressions
-// By preconstructed I do not mean I generate the regex for each of these expressions.
+// By preconstructed I do not mean I generate the Regex for each of these expressions.
 // This would prove much too heavy in terms of memory usage (the construction process
 // of NFA to DFA, at least at the moment, is fairly hefty). Instead, these are
 // strings that can be passed into the Regex constructor for simplicity sake.

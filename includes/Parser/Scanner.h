@@ -15,10 +15,11 @@
 #include <memory>
 #include <stack>
 
-#include "regex/regex.h"
-#include "scan_exception.h"
-#include "scan_state.h"
 #include "string.h"
+
+#include "Regex/Regex.h"
+#include "ScanException.h"
+#include "ScanState.h"
 
 namespace sage
 {
@@ -57,7 +58,7 @@ namespace sage
             // Maintain position
             std::stack<ScanState> states;
 
-            // Represents the regex matching the separator between tokens
+            // Represents the Regex matching the separator between tokens
             Regex delimiter;
 
             // Used to remove delimiter content between tokens in stream

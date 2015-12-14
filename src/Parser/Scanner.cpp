@@ -3,9 +3,7 @@
  *
  * Created by jrpotter (11/26/2015).
  */
-#include "memory.h"
-#include "parser/scanner.h"
-#include <iostream>
+#include "Parser/Scanner.h"
 
 using namespace sage;
 
@@ -77,7 +75,7 @@ std::string Scanner::nextWord()
  * point we denote the scan as a failure and continue from this point on. But that means
  * input that was '87.34' finished reading until '.34'! Thus, when deciding on a delimiter,
  * make sure there is no possibility of confusion. One could potentially modify the
- * above regex like so (note the Kleene star):
+ * above Regex like so (note the Kleene star):
  *
  *  delimiter = [+\-]?(0|[1-9]\d*)?(\.\d*)?
  *
@@ -95,7 +93,7 @@ std::string Scanner::next(Regex r)
     // Read in input until next separator or end
     // This is necessary to avoid problems regarding the above comment before the function
     // signature. That is, we read until we encounter our delimiter and then verify the
-    // token we just read in matches (at least in part) with the passed regex.
+    // token we just read in matches (at least in part) with the passed Regex.
     std::string token;
     while(input.peek() != EOF && !delimiter.matches(std::string(1, (char) input.peek()))) {
         cursor += 1;
@@ -129,7 +127,7 @@ std::string Scanner::next(Regex r)
     }
 
     // Could not find a match, so return error
-    std::string message = "Could not match token " + token_copy + " with regex";
+    std::string message = "Could not match token " + token_copy + " with Regex";
     throw ScanException(message, states.top().getLine(), states.top().getColumn());
 }
 

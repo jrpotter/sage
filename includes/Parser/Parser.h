@@ -1,5 +1,5 @@
 /**
- * pparser.h
+ * parser.h
  *
  * The following is a simple parser for the simple PEG grammar as specified in the different
  * examples provided in the /grammars folder. The resulting table is then used when parsing files
@@ -13,38 +13,41 @@
  * Created by jrpotter (12/05/2015).
  */
 
-#ifndef SAGE_PPARSER_H
-#define SAGE_PPARSER_H
+#ifndef SAGE_PEG_PARSER_H
+#define SAGE_PEG_PARSER_H
 
 #include <fstream>
 
 #include "macro.h"
-#include "parser/scanner.h"
-#include "peg_exception.h"
-#include "ptoken.h"
+
+#include "Scanner.h"
+#include "PEGException.h"
+#include "PEGToken.h"
 
 namespace sage
 {
-    class PParser
+    class Parser
     {
         public:
-            PParser(std::string);
-            ~PParser();
+            Parser(std::string);
+            ~Parser();
+
+            //std::shared_ptr<AST> parse(std::istream&);
 
         private:
 
             // Source to read from
-            std::ifstream stream;
+            std::ifstream init_stream;
 
             // Expression table; start refers to the first nonterminal used
             // in parsing, while the table refers to how to continue parsing
             // the remaining of the stream.
             std::string start;
-            std::map<std::string, std::shared_ptr<PToken>> table;
+            std::map<std::string, std::shared_ptr<PEGToken>> table;
 
             // Used to actually manipulate and read in the given file
-            void parse(Scanner&);
+            void initializeTable(Scanner&);
     };
 }
 
-#endif //SAGE_PPARSER_H
+#endif //SAGE_PEG_PARSER_H

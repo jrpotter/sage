@@ -4,7 +4,7 @@
  * Created by jrpotter (11/26/2015).
  */
 
-#include "regex/regex.h"
+#include "Regex/Regex.h"
 
 using namespace sage;
 
@@ -40,10 +40,10 @@ Regex& Regex::fromPool(std::string key, std::string expr, int i)
  * Constructs an NFA out of the given expression, and then converts it to a DFA
  * which is stored for later matching. Bracketed expressions are handled in a manner
  * similar to format strings; that is, once a bracketed word has been found, this
- * word is mapped to the regex corresponding to the index of the bracketed word.
- * For example, if there is a regex "{a}{b}", then "a" is the name of the regex
- * at the 0th index of our vector, and "b" is the name of the regex at the 1st index.
- * If the same named regex is later found, it refers to the element already mapped
+ * word is mapped to the Regex corresponding to the index of the bracketed word.
+ * For example, if there is a Regex "{a}{b}", then "a" is the name of the Regex
+ * at the 0th index of our vector, and "b" is the name of the Regex at the 1st index.
+ * If the same named Regex is later found, it refers to the element already mapped
  * to and not the next indexed value.
  */
 Regex::Regex(std::string expr)
@@ -164,8 +164,8 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter) const
     components.emplace_back(std::make_shared<NFA>());
 
     // Begin processing input
-    // Note that an empty regex is not considered an error. Rather
-    // it is the regex that matches the empty string. Nonetheless,
+    // Note that an empty Regex is not considered an error. Rather
+    // it is the Regex that matches the empty string. Nonetheless,
     // caution must be taken when using this (if this is something
     // one would ever use...)
     char c;
@@ -248,7 +248,7 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter) const
  * If one would like, they could specify something like [ab-ae] to represent
  * 'ab', 'ac', 'ad', and 'ae'.
  *
- * Note within a range it is valid to use any regex characters besides hyphens
+ * Note within a range it is valid to use any Regex characters besides hyphens
  * as if they were regular characters. Prefixing them with a backslash will make
  * no difference. That being said, one can still use the special characters
  * (e.g. '\s').
@@ -314,8 +314,8 @@ std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss) const
  * ================================
  *
  * Any unrecognized characters immediately throw an error. Unfortunately, because
- * '\' is used to escape in both C++ and the following regex, it is necessary to
- * pass '\\\\' in order to indicate a backslash in the regex.
+ * '\' is used to escape in both C++ and the following Regex, it is necessary to
+ * pass '\\\\' in order to indicate a backslash in the Regex.
  */
 std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss) const
 {

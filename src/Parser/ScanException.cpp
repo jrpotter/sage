@@ -4,7 +4,7 @@
  * Created by jrpotter (12/13/2015).
  */
 
-#include "parser/scan_exception.h"
+#include "Parser/ScanException.h"
 
 using namespace sage;
 

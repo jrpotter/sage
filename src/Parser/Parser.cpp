@@ -1,10 +1,10 @@
 /**
- * pparser.cpp
+ * peg_parser.cpp
  *
  * Created by jrpotter (12/05/2015).
  */
 
-#include "peg/pparser.h"
+#include "Parser/Parser.h"
 
 using namespace sage;
 
@@ -12,12 +12,12 @@ using namespace sage;
  * Constructor
  * ================================
  */
-PParser::PParser(std::string filename)
-    : stream(filename, std::ifstream::in)
+Parser::Parser(std::string filename)
+    : init_stream(filename, std::ifstream::in)
 {
-    if(stream.is_open()) {
-        Scanner input(stream);
-        parse(input);
+    if(init_stream.is_open()) {
+        Scanner input(init_stream);
+        initializeTable(input);
     }
 }
 
@@ -25,22 +25,31 @@ PParser::PParser(std::string filename)
  * Destructor
  * ================================
  */
-PParser::~PParser()
+Parser::~Parser()
 {
-    if(stream.is_open()) {
-        stream.close();
+    if(init_stream.is_open()) {
+        init_stream.close();
     }
 }
 
 /**
  * Parsing
  * ================================
+ */
+//std::shared_ptr<AST> Parser::parse(std::istream& input)
+//{
+
+//}
+
+/**
+ * Initialize Table
+ * ================================
  *
  * The following reads in the PEG in the passed filename and converts the
- * grammar specification into an AST for traversal when parsing other files
+ * grammar specification into a set of tokens for traversal when parsing other files
  * according to said grammar.
  */
-void PParser::parse(Scanner& input)
+void Parser::initializeTable(Scanner& input)
 {
     // These regexes are used to read in a custom PEG grammar.
     // Refer to /grammars/arithmetic.peg for a more thorough explanation
@@ -60,6 +69,7 @@ void PParser::parse(Scanner& input)
             // First read in nonterminal and find start if possible
             std::string nonterminal = input.next(markedWord);
             if(nonterminal.back() == PPARSER_START) {
+                nonterminal.pop_back();
                 if(start.empty()) {
                     start = nonterminal;
                 } else {
@@ -74,7 +84,7 @@ void PParser::parse(Scanner& input)
             // Rest of line is dedicated to definition
             std::stringstream ss(input.readLine());
             Scanner tmp(ss);
-            table[nonterminal] = std::make_shared<PToken>(tmp);
+            table[nonterminal] = std::make_shared<PEGToken>(tmp);
         }
     }
 

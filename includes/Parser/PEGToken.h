@@ -1,5 +1,5 @@
 /**
- * ptoken.h
+ * peg_token.h
  *
  * Though I initially designed the PEG tokens via classes that inherited from
  * a single base class, this seemed overly burdensome for what should ultimately
@@ -16,11 +16,11 @@
 #include <new>
 #include <vector>
 
-#include "parser/scanner.h"
+#include "Scanner.h"
 
 namespace sage
 {
-    class PToken
+    class PEGToken
     {
         public:
 
@@ -42,16 +42,16 @@ namespace sage
             } repeat;
 
             // Constructors
-            PToken();
-            PToken(Scanner&);
-            PToken(PTOKEN_TAG);
-            PToken(std::string, PTOKEN_TAG);
-            ~PToken();
+            PEGToken();
+            PEGToken(Scanner&);
+            PEGToken(PTOKEN_TAG);
+            PEGToken(std::string, PTOKEN_TAG);
+            ~PEGToken();
 
             // The following will run through and attempt to read in from
             // the scanner the corresponding definition if possible. It
             // will return whether or not it was successful.
-            bool process(Scanner&, std::map<std::string, PToken>&);
+            bool process(Scanner&, std::map<std::string, PEGToken>&);
 
         private:
 
@@ -62,7 +62,7 @@ namespace sage
             union {
                 Regex terminal;
                 std::string nonterminal;
-                std::vector<std::shared_ptr<PToken>> order;
+                std::vector<std::shared_ptr<PEGToken>> order;
             };
     };
 }

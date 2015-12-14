@@ -4,7 +4,7 @@
  * Created by jrpotter (11/27/2015).
  */
 
-#include "regex/automaton.h"
+#include "Regex/Automaton.h"
 
 using namespace sage;
 
