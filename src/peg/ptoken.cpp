@@ -104,7 +104,7 @@ PToken::PToken(Scanner& definition)
  * that as the "this" of the given object. I need to do this because, unless
  * I initialize the necessary variant from the beginning, all elements of
  * the given union will be undefined. As a result, trying to assign the
- * member of the element will not make sense, this the operator = is actually
+ * member of the element will not make sense, since the operator = is actually
  * a member of a given object.
  */
 PToken::PToken(PTOKEN_TAG tag)
@@ -197,6 +197,6 @@ bool PToken::process(Scanner& s, std::map<std::string, PToken>& table)
 
         // Only exists during a default constructor call, but shouldn't actually do anything
         case TAG_NONE:
-            break;
+            return false;
     }
 }
