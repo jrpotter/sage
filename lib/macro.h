@@ -46,6 +46,7 @@
 
 // PEG Parser Definitions
 // These are specific PParser characters used when parsing
+#define PPARSER_CHOOSE            '|'
 #define PPARSER_COMMENT           '#'
 #define PPARSER_KLEENE_STAR       '*'
 #define PPARSER_KLEENE_PLUS       '+'

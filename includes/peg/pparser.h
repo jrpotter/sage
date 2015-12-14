@@ -20,7 +20,7 @@
 
 #include "exception/peg_exception.h"
 #include "parser/scanner.h"
-#include "choices.h"
+#include "peg/ptoken.h"
 #include "macro.h"
 
 namespace sage
@@ -40,7 +40,7 @@ namespace sage
             // in parsing, while the table refers to how to continue parsing
             // the remaining of the stream.
             std::string start;
-            std::map<std::string, std::shared_ptr<Definition>> table;
+            std::map<std::string, std::shared_ptr<PToken>> table;
 
             // Used to actually manipulate and read in the given file
             void parse(Scanner&);

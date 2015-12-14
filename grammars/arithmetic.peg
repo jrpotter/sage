@@ -13,7 +13,7 @@
 # match has been encountered. We must use two pipe operators to distinguish
 # from a single pipe used in a regex. Thus expressions like:
 #
-# Example -> Example || [1-9]
+# Example -> Example | [1-9]
 #
 # will fail since each time Example is induced, it will look again into Example.
 #
@@ -22,4 +22,4 @@
 Expression' -> Sum
 Sum         -> Product ("[+\-]" Product)*
 Product     -> Value ("[*/]" Value)*
-Value       -> "[0-9\"]+" || "\(" Expression "\)"
+Value       -> "[0-9\"]+" | "\(" Expression "\)"

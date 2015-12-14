@@ -68,9 +68,13 @@ void PParser::parse(Scanner& input)
                 }
             }
 
-            // Can now read in the arrow operator. Rest of line is dedicated to definition
+            // Can now read in the arrow operator
             input.next(arrowOperator);
-            table[nonterminal] = std::make_shared<Choices>(input.readLine());
+
+            // Rest of line is dedicated to definition
+            std::stringstream ss(input.readLine());
+            Scanner tmp(ss);
+            table[nonterminal] = std::make_shared<PToken>(tmp);
         }
     }
 

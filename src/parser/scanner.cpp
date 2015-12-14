@@ -175,8 +175,11 @@ std::string Scanner::readUntil(char delim)
     }
 
     // Read in delimiter
-    buffer += input.get();
-    states.top().advance(buffer.back());
+    if(input.peek() != EOF) {
+        buffer += input.get();
+        states.top().advance(buffer.back());
+    }
+
     clearDelimiterContent();
     return buffer;
 }
@@ -193,6 +196,7 @@ char Scanner::read()
     char buffer[1];
     input.read(buffer, 1);
     states.top().advance(buffer[0]);
+    clearDelimiterContent();
     return buffer[0];
 }
 
