@@ -18,10 +18,10 @@
 
 #include <fstream>
 
-#include "exception/peg_exception.h"
-#include "parser/scanner.h"
-#include "peg/ptoken.h"
 #include "macro.h"
+#include "parser/scanner.h"
+#include "peg_exception.h"
+#include "ptoken.h"
 
 namespace sage
 {

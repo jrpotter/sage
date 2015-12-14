@@ -14,10 +14,10 @@
 
 namespace sage
 {
-    class InvalidRegularExpression : public std::exception
+    class RegexException : public std::exception
     {
         public:
-            InvalidRegularExpression(std::string, char, long);
+            RegexException(std::string, char, long);
             virtual const char* what() const noexcept;
 
         private:

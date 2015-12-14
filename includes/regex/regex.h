@@ -28,12 +28,11 @@
 #include <algorithm>
 #include <list>
 #include <limits>
-#include <string>
 #include <sstream>
 
+#include "dfa.h"
 #include "macro.h"
-#include "exception/regex_exception.h"
-#include "regex/dfa.h"
+#include "regex_exception.h"
 
 namespace sage
 {

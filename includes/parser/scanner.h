@@ -15,8 +15,8 @@
 #include <memory>
 #include <stack>
 
-#include "exception/scan_exception.h"
 #include "regex/regex.h"
+#include "scan_exception.h"
 #include "scan_state.h"
 #include "string.h"
 
