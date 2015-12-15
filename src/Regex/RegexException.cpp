@@ -12,6 +12,13 @@ using namespace sage;
  * Constructor
  * ================================
  */
+RegexException::RegexException(std::string message, long index)
+{
+    std::stringstream ss;
+    ss << message << " at position " << index << '.' << std::endl;
+    response = ss.str();
+}
+
 RegexException::RegexException(std::string message, char problem, long index)
 {
     std::stringstream ss;
@@ -33,7 +40,7 @@ RegexException::RegexException(std::string message, char problem, long index)
 
     // Cleanup
     delete[] buffer;
-    message = ss.str();
+    response = ss.str();
 }
 
 /**
@@ -42,5 +49,5 @@ RegexException::RegexException(std::string message, char problem, long index)
  */
 const char* RegexException::what() const noexcept
 {
-    return message.c_str();
+    return response.c_str();
 }

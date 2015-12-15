@@ -64,30 +64,29 @@ std::string Scanner::nextWord()
 /**
  * Next
  * ================================
- * Must read in as much of a delimiter as possible and then advance forward. This does
- * present some limitations though. For instance, suppose my delimiter was actually
- * a floating number, where having a decimal point was optional, but, if included, must
- * have trailing numbers following it. That is:
- *
- *  delimiter = [+\-]?(0|[1-9]\d*)?(\.\d+)?
- *
- * Then when we encounter a number we continue to read, but once we read in the decimal
- * point we denote the scan as a failure and continue from this point on. But that means
- * input that was '87.34' finished reading until '.34'! Thus, when deciding on a delimiter,
- * make sure there is no possibility of confusion. One could potentially modify the
- * above Regex like so (note the Kleene star):
- *
- *  delimiter = [+\-]?(0|[1-9]\d*)?(\.\d*)?
- *
- * to avoid any confusion, but this may also be undesirable. Consider all possible tradeoffs.
+ * Reads in as much of the regex as possible by considering delimited regions.
+ * In particular, we break up the input into tokens and then expand upon the
+ * token for a proper match.
  */
+
 std::string Scanner::next(Regex r)
 {
+    long cursor = input.tellg();
+
+    // If the regex is aligned to match along a word boundary at the front, we should
+    // immediately check if we are along a boundary and continue only if this is the case
+    if(r.getFrontWordBounded() && cursor > 0) {
+        Regex whitespace = Regex::fromPool(REGEX_POOL_WHITESPACE, REGEX_EXPR_WHITESPACE);
+        input.seekg(cursor - 1);
+        if(!whitespace.matches(std::string(1, static_cast<char>(input.get())))) {
+            throw ScanException("Could not align along word boundary", states.top());
+        }
+    }
+
     // We manually keep track of the current state and revert if necessary
     // Note the size of the columns stack will correspond to the number of lines read
     // during this function call, while the actual values maintains the last column
-    // of the corresponding line read
-    long cursor = input.tellg();
+    // of the corresponding line read (or the column delta for the first line)
     std::stack<unsigned int> columns({1});
 
     // Read in input until next separator or end
@@ -105,30 +104,39 @@ std::string Scanner::next(Regex r)
         }
     }
 
-    // We now work backwards through the string, testing for matches with the largest token possible
-    // We revert the state if necessary, and then save the current state to match the changes accordingly
+    // If we expect an alignment along the back of the string, we simply check if a match occurs
+    // since the scanner naturally delimits via word boundaries (i.e. whitespace)
     std::string token_copy = token;
-    while(!token.empty()) {
+    if(r.getBackWordBounded()) {
         if(r.matches(token)) {
-            unsigned int next_line = states.top().getLine() + (int) columns.size() - 1;
-            unsigned int next_column = (columns.size() == 1) ? states.top().getColumn() + columns.top() : columns.top();
-            states.top() = ScanState(cursor, next_line, next_column);
-            clearDelimiterContent();
             return token;
-        } else {
-            token.pop_back();
-            input.seekg(--cursor);
-            if(columns.top() == 1) {
-                columns.pop();
+        }
+
+    // Otherwise we now work backwards through the string, testing for matches with the largest token possible
+    // We revert the state if necessary, and then save the current state to match the changes accordingly
+    } else {
+        while(!token.empty()) {
+            if(r.matches(token)) {
+                unsigned int next_line = states.top().getLine() + (int) columns.size() - 1;
+                unsigned int next_column = (columns.size() == 1) ? states.top().getColumn() + columns.top() : columns.top();
+                states.top() = ScanState(cursor, next_line, next_column);
+                clearDelimiterContent();
+                return token;
             } else {
-                columns.top() -= 1;
+                token.pop_back();
+                input.seekg(--cursor);
+                if(columns.top() == 1) {
+                    columns.pop();
+                } else {
+                    columns.top() -= 1;
+                }
             }
         }
     }
 
     // Could not find a match, so return error
     std::string message = "Could not match token " + token_copy + " with Regex";
-    throw ScanException(message, states.top().getLine(), states.top().getColumn());
+    throw ScanException(message, states.top());
 }
 
 /**
@@ -141,8 +149,7 @@ std::string Scanner::readLine()
 {
     std::string buffer;
     if(!std::getline(input, buffer)) {
-        auto state = getCurrentState();
-        throw ScanException("Could not extract line", state.getLine(), state.getColumn());
+        throw ScanException("Could not extract line", states.top());
     }
 
     states.top().advance('\n');
@@ -236,7 +243,7 @@ ScanState Scanner::restoreCheckpoint()
     return top;
 }
 
-ScanState Scanner::getCurrentState()
+ScanState Scanner::getCurrentState() const
 {
     return states.top();
 }

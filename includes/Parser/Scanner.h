@@ -48,7 +48,7 @@ namespace sage
             // Allows returning back to a given state
             void saveCheckpoint();
             ScanState restoreCheckpoint();
-            ScanState getCurrentState();
+            ScanState getCurrentState() const;
 
         private:
 

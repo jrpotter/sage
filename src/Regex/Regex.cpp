@@ -47,6 +47,9 @@ Regex& Regex::fromPool(std::string key, std::string expr, int i)
  * to and not the next indexed value.
  */
 Regex::Regex(std::string expr)
+    : expr(expr)
+    , front_word_bounded(false)
+    , back_word_bounded(false)
 {
     std::stringstream ss(expr);
     std::shared_ptr<NFA> nfa = read(ss);
@@ -59,6 +62,8 @@ Regex::Regex(std::string expr)
  */
 Regex::Regex(const Regex& other)
     : expr(other.expr)
+    , front_word_bounded(other.front_word_bounded)
+    , back_word_bounded(other.back_word_bounded)
     , automaton(std::make_shared<DFA>(*other.automaton))
 { }
 
@@ -90,6 +95,8 @@ void Regex::swap(Regex& a, Regex& b)
 {
     using std::swap;
     swap(a.expr, b.expr);
+    swap(a.front_word_bounded, b.front_word_bounded);
+    swap(a.back_word_bounded, b.back_word_bounded);
     swap(a.automaton, b.automaton);
 }
 
@@ -127,6 +134,20 @@ bool Regex::matches(std::string search, int index)
 }
 
 /**
+ * Word Boundaries
+ * ================================
+ */
+bool Regex::getFrontWordBounded() const
+{
+    return front_word_bounded;
+}
+
+bool Regex::getBackWordBounded() const
+{
+    return back_word_bounded;
+}
+
+/**
  * Collapse NFAs
  * ================================
  *
@@ -156,7 +177,7 @@ const std::shared_ptr<NFA> Regex::collapseNFAs(std::list<std::shared_ptr<NFA>>& 
  * build the corresponding NFA. We build up the NFA in parts
  * (as indicated by '|') to then be joined together.
  */
-std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter) const
+std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter)
 {
     // Start the NFA to be built
     // This will continue to be expanded as '|'s are encountered
@@ -253,7 +274,7 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter) const
  * no difference. That being said, one can still use the special characters
  * (e.g. '\s').
  */
-std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss) const
+std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss)
 {
     auto head = std::make_shared<NFA>();
     std::list<std::shared_ptr<NFA>> components;
@@ -317,7 +338,7 @@ std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss) const
  * '\' is used to escape in both C++ and the following Regex, it is necessary to
  * pass '\\\\' in order to indicate a backslash in the Regex.
  */
-std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss) const
+std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss)
 {
     std::stringstream range;
 
@@ -342,6 +363,15 @@ std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss) const
             case 'w': // Alphanumeric Characters
                 range << "a-zA-Z0-9]";
                 break;
+            case 'b': // Word Boundary
+                if(ss.tellg() == 2) {
+                    front_word_bounded = true;
+                } else if(ss.peek() == EOF) {
+                    back_word_bounded = true;
+                } else {
+                    throw RegexException("Word boundary must be at end", ss.tellg());
+                }
+                return nullptr;
             case REGEX_CHOOSE:
             case REGEX_HYPHEN:
             case REGEX_KLEENE_PLUS:

@@ -11,13 +11,15 @@
 #include <exception>
 #include <sstream>
 
+#include "ScanState.h"
+
 namespace sage
 {
     class PEGException : public std::exception
     {
         public:
             PEGException(std::string);
-            PEGException(std::string, unsigned int, unsigned int);
+            PEGException(std::string, ScanState);
             virtual const char* what() const noexcept;
 
         private:

@@ -12,12 +12,14 @@
 #include <exception>
 #include <sstream>
 
+#include "ScanState.h"
+
 namespace sage
 {
     class ScanException : public std::exception
     {
         public:
-            ScanException(std::string, unsigned int, unsigned int);
+            ScanException(std::string, ScanState);
             virtual const char* what() const noexcept;
 
         private:

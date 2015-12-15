@@ -32,7 +32,7 @@ namespace sage
             Parser(std::string);
             ~Parser();
 
-            //std::shared_ptr<AST> parse(std::istream&);
+            void parse(std::istream&);
 
         private:
 

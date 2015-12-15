@@ -16,10 +16,10 @@ PEGException::PEGException(std::string message)
     : response(message)
 { }
 
-PEGException::PEGException(std::string message, unsigned int line, unsigned int column)
+PEGException::PEGException(std::string message, ScanState state)
 {
     std::stringstream ss(message);
-    ss << " at (line: " << line << ", column: " << column << ")";
+    ss << " at (line: " << state.getLine() << ", column: " << state.getColumn() << ")";
     response = ss.str();
 }
 

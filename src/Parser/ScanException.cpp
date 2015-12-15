@@ -12,10 +12,10 @@ using namespace sage;
  * Constructor
  * ================================
  */
-ScanException::ScanException(std::string message, unsigned int line, unsigned int column)
+ScanException::ScanException(std::string message, ScanState state)
 {
     std::stringstream ss;
-    ss << message << " at (line: " << line << ", column: " << column << ")";
+    ss << message << " at (line: " << state.getLine() << ", column: " << state.getColumn() << ")";
     response = ss.str();
 }
 

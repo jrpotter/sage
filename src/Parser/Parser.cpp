@@ -36,10 +36,10 @@ Parser::~Parser()
  * Parsing
  * ================================
  */
-//std::shared_ptr<AST> Parser::parse(std::istream& input)
-//{
+void Parser::parse(std::istream& input)
+{
 
-//}
+}
 
 /**
  * Initialize Table
@@ -73,8 +73,7 @@ void Parser::initializeTable(Scanner& input)
                 if(start.empty()) {
                     start = nonterminal;
                 } else {
-                    auto state = input.getCurrentState();
-                    throw PEGException("Multiple starting nonterminals", state.getLine(), state.getColumn());
+                    throw PEGException("Multiple starting nonterminals", input.getCurrentState());
                 }
             }
 

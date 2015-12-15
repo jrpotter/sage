@@ -17,11 +17,12 @@ namespace sage
     class RegexException : public std::exception
     {
         public:
+            RegexException(std::string, long);
             RegexException(std::string, char, long);
             virtual const char* what() const noexcept;
 
         private:
-            std::string message;
+            std::string response;
     };
 }
 
