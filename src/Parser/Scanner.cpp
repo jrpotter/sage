@@ -67,6 +67,9 @@ std::string Scanner::nextWord()
  * Reads in as much of the regex as possible by considering delimited regions.
  * In particular, we break up the input into tokens and then expand upon the
  * token for a proper match.
+ *
+ * Note we manually check for word boundaries since we are managing a stream
+ * and regex verifications are only functional in the contexts of strings.
  */
 
 std::string Scanner::next(Regex r)

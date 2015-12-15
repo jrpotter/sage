@@ -14,12 +14,6 @@
  * - \A: Alphabetical Characters ([a-zA-Z])
  * - \w: Alphanumeric Characters ([a-zA-Z0-9])
  *
- * In addition, by bracketing words (i.e. '{' and '}') and passing a regex corresponding to
- * this parameterized word, we can place sub-regexes into our given code. For instance, I can
- * represent a character as r = Regex("[a-zA-Z]") and a word as w = Regex("{Character}+", r).
- *
- * The following also provides an exception class providing details on any invalid regexes.
- *
  * Created by jrpotter (11/26/2015).
  */
 

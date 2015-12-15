@@ -124,12 +124,25 @@ int Regex::find(std::string search)
  */
 bool Regex::matches(std::string search, int index)
 {
+    // Check that the front matches correctly
+    if(front_word_bounded && index > 0) {
+        Regex whitespace = Regex::fromPool(REGEX_POOL_WHITESPACE, REGEX_EXPR_WHITESPACE);
+        if(!whitespace.matches(search.substr(index - 1, 1))) {
+            return false;
+        }
+    }
+
+    // Begin traversal of automaton
     automaton->reset();
     for(int i = index; i < search.size(); i++) {
         if(!automaton->traverse(search[i])) {
             return false;
         }
     }
+
+    // There is no need to check for the back word boundary since
+    // we always search the entirety of the string. Consequently,
+    // we necessarily reach the end.
     return automaton->final();
 }
 
