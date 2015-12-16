@@ -82,7 +82,7 @@ void Parser::initializeTable(Scanner& input)
 
             // Rest of line is dedicated to definition
             std::stringstream ss(input.readLine());
-            table[nonterminal] = std::make_shared<Definition>(Scanner(ss));
+            table[nonterminal] = std::make_shared<Choices>(Scanner(ss));
         }
     }
 

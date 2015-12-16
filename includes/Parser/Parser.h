@@ -22,7 +22,7 @@
 
 #include "Scanner.h"
 #include "InvalidGrammar.h"
-#include "Definition.h"
+#include "PEG/Choices.h"
 
 namespace sage
 {
