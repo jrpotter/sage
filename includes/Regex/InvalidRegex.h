@@ -1,24 +1,24 @@
 /**
- * regex_exception.h
+ * invalid_regex.h
  *
  * The exception raised when an invalid regular expression is attempted to be constructed.
  *
  * Created by jrpotter (12/13/2015).
  */
 
-#ifndef SAGE_REGEX_EXCEPTION_H
-#define SAGE_REGEX_EXCEPTION_H
+#ifndef SAGE_INVALID_REGEX_H
+#define SAGE_INVALID_REGEX_H
 
 #include <exception>
 #include <sstream>
 
 namespace sage
 {
-    class RegexException : public std::exception
+    class InvalidRegex : public std::exception
     {
         public:
-            RegexException(std::string, long);
-            RegexException(std::string, char, long);
+            InvalidRegex(std::string, long);
+            InvalidRegex(std::string, char, long);
             virtual const char* what() const noexcept;
 
         private:
@@ -26,4 +26,4 @@ namespace sage
     };
 }
 
-#endif //SAGE_REGEX_EXCEPTION_H
+#endif //SAGE_INVALID_REGEX_H

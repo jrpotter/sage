@@ -226,7 +226,7 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter)
             case REGEX_KLEENE_STAR:
             case REGEX_OPTIONAL:
             case REGEX_RANGE_END:
-                throw RegexException("Unexpected '%c'", c, ss.tellg());
+                throw InvalidRegex("Unexpected '%c'", c, ss.tellg());
             case REGEX_WILDCARD:
                 next = std::make_shared<NFA>(0, std::numeric_limits<char>::max());
                 break;
@@ -263,11 +263,11 @@ std::shared_ptr<NFA> Regex::read(std::stringstream& ss, int counter)
     // to report the error. Otherwise if we reached an end but we're not
     // back at the root call, then we have nested ourselves too far.
     if(counter == 0 && c == REGEX_SUB_END) {
-        throw RegexException("Encountered extra '%c' character", REGEX_SUB_END, ss.tellg());
+        throw InvalidRegex("Encountered extra '%c' character", REGEX_SUB_END, ss.tellg());
     } else if(counter == 1 && ss.peek() == EOF && c != REGEX_SUB_END) {
-        throw RegexException("Encountered extra '%c' character", REGEX_SUB_START, ss.tellg());
+        throw InvalidRegex("Encountered extra '%c' character", REGEX_SUB_START, ss.tellg());
     } else if(counter > 1 && ss.peek() == EOF) {
-        throw RegexException("Encountered extra '%c' character", REGEX_SUB_START, ss.tellg());
+        throw InvalidRegex("Encountered extra '%c' character", REGEX_SUB_START, ss.tellg());
     }
 
     return collapseNFAs(components);
@@ -310,9 +310,9 @@ std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss)
             if(ss.peek() == '-') {
                 char end; ss.get();
                 if(!ss.get(end)) {
-                    throw RegexException("End range of '%c' not specified", REGEX_HYPHEN, ss.tellg());
+                    throw InvalidRegex("End range of '%c' not specified", REGEX_HYPHEN, ss.tellg());
                 } else if(begin > end) {
-                    throw RegexException("Range starting at '%c' not ordered correctly", begin, ss.tellg());
+                    throw InvalidRegex("Range starting at '%c' not ordered correctly", begin, ss.tellg());
                 } else {
                     components.emplace_back(std::make_shared<NFA>(begin, end));
                 }
@@ -322,13 +322,13 @@ std::shared_ptr<NFA> Regex::readRange(std::stringstream& ss)
 
         // Otherwise we encountered a hypher, but this should only occur after reading in a character
         } else {
-            throw RegexException("Encountered non-paired '%c'", REGEX_HYPHEN, ss.tellg());
+            throw InvalidRegex("Encountered non-paired '%c'", REGEX_HYPHEN, ss.tellg());
         }
     }
 
     // Did not encounter the end of the range
     if(begin != REGEX_RANGE_END) {
-        throw RegexException("Expected '%c'", REGEX_RANGE_END, ss.tellg());
+        throw InvalidRegex("Expected '%c'", REGEX_RANGE_END, ss.tellg());
     }
 
     // Need to join all together
@@ -382,7 +382,7 @@ std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss)
                 } else if(ss.peek() == EOF) {
                     back_word_bounded = true;
                 } else {
-                    throw RegexException("Word boundary must be at end", ss.tellg());
+                    throw InvalidRegex("Word boundary must be at end", ss.tellg());
                 }
                 return nullptr;
             case REGEX_CHOOSE:
@@ -398,10 +398,10 @@ std::shared_ptr<NFA> Regex::readSpecial(std::stringstream& ss)
             case REGEX_WILDCARD:
                 return std::make_shared<NFA>(c);
             default:
-                throw RegexException("Unrecognized special character '%c'", c, ss.tellg());
+                throw InvalidRegex("Unrecognized special character '%c'", c, ss.tellg());
         }
     } else {
-        throw RegexException("Expected character after '%c'", REGEX_SPECIAL, ss.tellg());
+        throw InvalidRegex("Expected character after '%c'", REGEX_SPECIAL, ss.tellg());
     }
 
     return readRange(range);

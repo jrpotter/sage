@@ -4,7 +4,7 @@
  * Created by jrpotter (12/13/2015).
  */
 
-#include "Regex/RegexException.h"
+#include "Regex/InvalidRegex.h"
 
 using namespace sage;
 
@@ -12,14 +12,14 @@ using namespace sage;
  * Constructor
  * ================================
  */
-RegexException::RegexException(std::string message, long index)
+InvalidRegex::InvalidRegex(std::string message, long index)
 {
     std::stringstream ss;
     ss << message << " at position " << index << '.' << std::endl;
     response = ss.str();
 }
 
-RegexException::RegexException(std::string message, char problem, long index)
+InvalidRegex::InvalidRegex(std::string message, char problem, long index)
 {
     std::stringstream ss;
 
@@ -47,7 +47,7 @@ RegexException::RegexException(std::string message, char problem, long index)
  * What
  * ================================
  */
-const char* RegexException::what() const noexcept
+const char* InvalidRegex::what() const noexcept
 {
     return response.c_str();
 }

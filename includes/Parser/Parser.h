@@ -13,25 +13,28 @@
  * Created by jrpotter (12/05/2015).
  */
 
-#ifndef SAGE_PEG_PARSER_H
-#define SAGE_PEG_PARSER_H
+#ifndef SAGE_PARSER_H
+#define SAGE_PARSER_H
 
 #include <fstream>
 
 #include "macro.h"
 
 #include "Scanner.h"
-#include "PEGException.h"
-#include "PEGToken.h"
+#include "InvalidGrammar.h"
+#include "Definition.h"
 
 namespace sage
 {
     class Parser
     {
         public:
+
+            // Constructors (expect filename of .peg file)
             Parser(std::string);
             ~Parser();
 
+            // Constructs an AST from stream (usually a file stream)
             void parse(std::istream&);
 
         private:
@@ -43,11 +46,11 @@ namespace sage
             // in parsing, while the table refers to how to continue parsing
             // the remaining of the stream.
             std::string start;
-            std::map<std::string, std::shared_ptr<PEGToken>> table;
+            symbol_table table;
 
             // Used to actually manipulate and read in the given file
             void initializeTable(Scanner&);
     };
 }
 
-#endif //SAGE_PEG_PARSER_H
+#endif //SAGE_PARSER_H

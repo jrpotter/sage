@@ -1,5 +1,5 @@
 /**
- * peg_parser.cpp
+ * parser.cpp
  *
  * Created by jrpotter (12/05/2015).
  */
@@ -73,7 +73,7 @@ void Parser::initializeTable(Scanner& input)
                 if(start.empty()) {
                     start = nonterminal;
                 } else {
-                    throw PEGException("Multiple starting nonterminals", input.getCurrentState());
+                    throw InvalidGrammar("Multiple starting nonterminals", input.getCurrentState());
                 }
             }
 
@@ -82,14 +82,13 @@ void Parser::initializeTable(Scanner& input)
 
             // Rest of line is dedicated to definition
             std::stringstream ss(input.readLine());
-            Scanner tmp(ss);
-            table[nonterminal] = std::make_shared<PEGToken>(tmp);
+            table[nonterminal] = std::make_shared<Definition>(Scanner(ss));
         }
     }
 
     // Must have at least one starting nonterminal
     if(start.empty()) {
-        throw PEGException("No starting nonterminal specified");
+        throw InvalidGrammar("No starting nonterminal specified");
     }
 
 }

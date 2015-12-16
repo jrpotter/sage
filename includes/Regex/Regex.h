@@ -28,7 +28,7 @@
 #include "macro.h"
 
 #include "DFA.h"
-#include "RegexException.h"
+#include "InvalidRegex.h"
 
 namespace sage
 {
