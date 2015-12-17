@@ -46,9 +46,9 @@ namespace sage
 
             // Checkpoints
             // Allows returning back to a given state
-            void saveCheckpoint();
-            ScanState restoreCheckpoint();
+            unsigned long saveCheckpoint();
             ScanState getCurrentState() const;
+            std::stack<ScanState> restoreCheckpoint(unsigned long = 0);
 
         private:
 

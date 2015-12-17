@@ -16,9 +16,10 @@ using namespace sage;
  * correctly, and in the order in which they are tried. We flatten the tree if
  * possible.
  */
+#include <iostream>
 std::shared_ptr<AST> Sequence::process(Scanner& s, const symbol_table& table)
 {
-    s.saveCheckpoint();
+    auto index = s.saveCheckpoint();
     std::vector<std::shared_ptr<AST>> nodes;
 
     // Note if there exist no nodes in the order vector, I regard that as an
@@ -29,7 +30,7 @@ std::shared_ptr<AST> Sequence::process(Scanner& s, const symbol_table& table)
         if(auto result = node->parse(s, table)) {
             nodes.push_back(result);
         } else {
-            s.restoreCheckpoint();
+            s.restoreCheckpoint(index);
             return nullptr;
         }
     }

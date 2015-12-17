@@ -241,27 +241,35 @@ char Scanner::peek(int pos)
  *
  * Allows tracking/restoring of stream states.
  */
-void Scanner::saveCheckpoint()
+unsigned long Scanner::saveCheckpoint()
 {
-    states.push(states.top());
     states.top().reset(input);
     auto line = states.top().getLine();
     auto column = states.top().getColumn();
     states.push(ScanState(input, line, column));
-}
-
-ScanState Scanner::restoreCheckpoint()
-{
-    ScanState top = states.top();
-    states.pop();
-    input.clear(states.top().getBufferState());
-    input.seekg(states.top().getCursor());
-    return top;
+    return states.size() - 1;
 }
 
 ScanState Scanner::getCurrentState() const
 {
     return states.top();
+}
+
+std::stack<ScanState> Scanner::restoreCheckpoint(unsigned long index)
+{
+    std::stack<ScanState> result;
+    index = (index < 1) ? states.size() - 1 : index;
+
+    // Pop until we hit the frame indexed by @index
+    while(states.size() > index) {
+        result.push(states.top());
+        states.pop();
+    }
+
+    // Reset state and return
+    input.clear(states.top().getBufferState());
+    input.seekg(states.top().getCursor());
+    return result;
 }
 
 /**

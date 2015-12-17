@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     //std::stringstream test("195 + (186 * 32) - 14 / 9");
 
     Parser parser("/home/jrpotter/Documents/sage/grammars/palindrome.peg");
-    std::stringstream test("a");
+    std::stringstream test("abacab     a");
 
     auto tree = parser.parse(test);
     if(tree) {
