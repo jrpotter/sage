@@ -26,8 +26,10 @@ std::shared_ptr<AST> Nonterminal::process(Scanner& s, const symbol_table& table)
 {
     auto itr = table.find(reference);
     if (itr != table.end()) {
-        return itr->second->parse(s, table);
-    } else {
-        return nullptr;
+        if(auto result = itr->second->parse(s, table)) {
+            return std::make_shared<AST>(reference, result);
+        }
     }
+
+    return nullptr;
 }

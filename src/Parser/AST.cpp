@@ -40,12 +40,13 @@ AST::AST(std::string token)
  * Constructor (Nonterminal)
  * ================================
  *
- * This should simply refer to another AST, but marked with a type.
+ * This should simply refer to another AST, but marked with a type (i.e. the name
+ * of the nonterminal).
  */
-AST::AST(std::string type, std::string token)
+AST::AST(std::string type, std::shared_ptr<AST> child)
         : type(type)
         , tag(NONTERMINAL)
-        , token(token)
+        , child(child)
 { }
 
 /**
@@ -79,11 +80,46 @@ AST::~AST()
     using namespace std;
     switch(tag) {
         case TERMINAL:
-        case NONTERMINAL:
             token.~string();
+            break;
+        case NONTERMINAL:
+            child.~shared_ptr<AST>();
             break;
         case BRANCHES:
             branches.~vector<std::shared_ptr<AST>>();
+            break;
+        case EMPTY:
+            break;
+    }
+}
+
+/**
+ * Display
+ * ================================
+*/
+void AST::format(std::stringstream& output, int level) const
+{
+    // No output in this case
+    if(tag == EMPTY) {
+        return;
+    } else if(tag != BRANCHES) {
+        output << "|-" << std::setfill('-') << std::setw(level * 5) << ' ';
+    }
+
+    switch(tag) {
+        case TERMINAL:
+            output << token << std::endl;
+            break;
+        case NONTERMINAL:
+            output << type << std::endl;
+            child->format(output, level + 1);
+            break;
+        case BRANCHES:
+            for(auto branch : branches) {
+                branch->format(output, level + 1);
+            }
+            break;
+        default:
             break;
     }
 }

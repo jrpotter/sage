@@ -13,12 +13,18 @@ using namespace sage;
  * ================================
  *
  * Processing is only successful if every element in the given sequence processes
- * correctly, and in the order in which they are tried.
+ * correctly, and in the order in which they are tried. We flatten the tree if
+ * possible.
  */
 std::shared_ptr<AST> Sequence::process(Scanner& s, const symbol_table& table)
 {
     s.saveCheckpoint();
     std::vector<std::shared_ptr<AST>> nodes;
+
+    // Note if there exist no nodes in the order vector, I regard that as an
+    // error (someone must've placed a choice operator at the very start of
+    // a definition which doesn't make sense). Therefore we return nullptr
+    // in this case.
     for(auto node : order) {
         if(auto result = node->parse(s, table)) {
             nodes.push_back(result);
@@ -28,7 +34,13 @@ std::shared_ptr<AST> Sequence::process(Scanner& s, const symbol_table& table)
         }
     }
 
-    return std::make_shared<AST>(nodes);
+    if(nodes.empty()) {
+        return nullptr;
+    } else if(nodes.size() == 1) {
+        return nodes[0];
+    } else {
+        return std::make_shared<AST>(nodes);
+    }
 }
 
 /**

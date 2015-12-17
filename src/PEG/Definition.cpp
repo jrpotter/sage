@@ -57,7 +57,13 @@ std::shared_ptr<AST> Definition::parseKleeneStar(Scanner& s, const symbol_table&
         nodes.push_back(result);
     }
 
-    return (nodes.empty()) ? std::make_shared<AST>() : std::make_shared<AST>(nodes);
+    if(nodes.empty()) {
+        return std::make_shared<AST>();
+    } else if(nodes.size() == 1) {
+        return nodes[0];
+    } else {
+        return std::make_shared<AST>(nodes);
+    }
 }
 
 /**
@@ -74,7 +80,13 @@ std::shared_ptr<AST> Definition::parseKleenePlus(Scanner& s, const symbol_table&
         nodes.push_back(result);
     }
 
-    return (nodes.empty()) ? nullptr : std::make_shared<AST>(nodes);
+    if(nodes.empty()) {
+        return nullptr;
+    } else if(nodes.size() == 1) {
+        return nodes[0];
+    } else {
+        return std::make_shared<AST>(nodes);
+    }
 }
 
 /**

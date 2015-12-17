@@ -35,15 +35,19 @@ Parser::~Parser()
 /**
  * Parsing
  * ================================
+ *
+ * Jumpstarts the parsing method by initiating parsing from the starting
+ * nonterminal specified in the *.peg grammar.
  */
 std::shared_ptr<AST> Parser::parse(std::istream& input)
 {
-    if(start.empty()) {
-        return nullptr;
-    } else {
-        Scanner wrapper(input);
-        return table[start]->parse(wrapper, table);
-    }
+    // Begin parsing
+    Scanner wrapper(input);
+    auto result = table[start]->parse(wrapper, table);
+
+    // We must go through the entirety of the input stream for me to regard
+    // the above as a successful parse. Otherwise, return failure
+    return (input.peek() == EOF) ? result : nullptr;
 }
 
 /**

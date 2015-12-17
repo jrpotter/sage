@@ -11,8 +11,9 @@
 #ifndef SAGE_AST_H
 #define SAGE_AST_H
 
+#include <iomanip>
 #include <memory>
-#include <string>
+#include <sstream>
 #include <vector>
 
 namespace sage
@@ -22,15 +23,19 @@ namespace sage
         public:
             AST();
             AST(std::string);
-            AST(std::string, std::string);
+            AST(std::string, std::shared_ptr<AST>);
             AST(std::vector<std::shared_ptr<AST>>);
             ~AST();
 
-        //private:
+            // Useful for quick analyzing of tree
+            void format(std::stringstream&, int=0) const;
+
+        private:
             std::string type;
             enum { EMPTY, TERMINAL, NONTERMINAL, BRANCHES } tag;
             union {
                 std::string token;
+                std::shared_ptr<AST> child;
                 std::vector<std::shared_ptr<AST>> branches;
             };
     };
