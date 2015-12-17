@@ -26,7 +26,7 @@ Choices::Choices(Scanner& definition)
         // This is important so reading in the next word when scanning doesn't
         // skip over any content (in the case of single letter nonterminals)
         char next = definition.peek();
-        if(!letter.matches(std::string(static_cast<unsigned long>(next), 1))) {
+        if(!letter.matches(std::string(1, next))) {
             next = definition.read();
         }
 
@@ -96,8 +96,7 @@ Choices::Choices(Scanner&& definition)
 std::shared_ptr<AST> Choices::process(Scanner& s, const symbol_table& table)
 {
     for(auto option : options) {
-        auto result = option->process(s, table);
-        if(result) {
+        if(auto result = option->parse(s, table)) {
             return result;
         }
     }

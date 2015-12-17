@@ -36,9 +36,14 @@ Parser::~Parser()
  * Parsing
  * ================================
  */
-void Parser::parse(std::istream& input)
+std::shared_ptr<AST> Parser::parse(std::istream& input)
 {
-
+    if(start.empty()) {
+        return nullptr;
+    } else {
+        Scanner wrapper(input);
+        return table[start]->parse(wrapper, table);
+    }
 }
 
 /**

@@ -20,8 +20,7 @@ std::shared_ptr<AST> Sequence::process(Scanner& s, const symbol_table& table)
     s.saveCheckpoint();
     std::vector<std::shared_ptr<AST>> nodes;
     for(auto node : order) {
-        auto result = node->process(s, table);
-        if(result) {
+        if(auto result = node->parse(s, table)) {
             nodes.push_back(result);
         } else {
             s.restoreCheckpoint();

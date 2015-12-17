@@ -9,6 +9,19 @@
 using namespace sage;
 
 /**
+ * Constructor
+ * ================================
+ *
+ * Here I make a distinction between results returned when parsing results. In particular,
+ * a nullptr indicates a failure in parsing while an empty parse tree (i.e. with an empty tag)
+ * indicates that parsing was successful but required no nodes (perhaps all elements were optional).
+ */
+AST::AST()
+    : type("")
+    , tag(EMPTY)
+{ }
+
+/**
  * Constructor (Terminal)
  * ================================
  *

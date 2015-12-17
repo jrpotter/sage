@@ -20,16 +20,15 @@ namespace sage
     class AST
     {
         public:
-
-            // Constructors
+            AST();
             AST(std::string);
             AST(std::string, std::string);
             AST(std::vector<std::shared_ptr<AST>>);
             ~AST();
 
-        private:
+        //private:
             std::string type;
-            enum { TERMINAL, NONTERMINAL, BRANCHES } tag;
+            enum { EMPTY, TERMINAL, NONTERMINAL, BRANCHES } tag;
             union {
                 std::string token;
                 std::vector<std::shared_ptr<AST>> branches;

@@ -20,16 +20,6 @@
 
 namespace sage
 {
-    // Indicates how often a definition should be repeated.
-    // This mirrors the operators present in a regular expression.
-    enum DEFINITION_REPEAT
-    {
-        REPEAT_KLEENE_STAR,     // Indicates a definition can repeat 0 or more times
-        REPEAT_KLEENE_PLUS,     // Indicates a definition can repeat 1 or more times
-        REPEAT_OPTIONAL,        // Indicates a definition can occur 0 or 1 times
-        REPEAT_NONE             // Indicates that a definition should occur only once
-    };
-
     // Convenience typedef to map nonterminals to their definitions
     class Definition;
     using symbol_table = std::map<std::string, std::shared_ptr<Definition>>;
@@ -41,14 +31,35 @@ namespace sage
             Definition();
             virtual ~Definition() = default;
 
-            // Processing is the actual act of reading in (from the input stream
-            // referenced in the passed scanner) and return an AST corresponding
-            // to said stream.
+            // The following is the means by which parsing the stream (referenced from
+            // within the input stream in the scanner) is handled. In particular, this
+            // function manages the number of times processing should occur.
+            std::shared_ptr<AST> parse(Scanner&, const symbol_table&);
+
+            // Indicates how often a definition should be repeated. This mirrors the operators
+            // present in a regular expression. We make this publicly accessible since, during the
+            // reading in of the *.peg file, we need to modify the operators for each definition anyways
+            enum DEFINITION_REPEAT
+            {
+                REPEAT_KLEENE_STAR,     // Indicates a definition can repeat 0 or more times
+                REPEAT_KLEENE_PLUS,     // Indicates a definition can repeat 1 or more times
+                REPEAT_OPTIONAL,        // Indicates a definition can occur 0 or 1 times
+                REPEAT_NONE             // Indicates that a definition should occur only once
+            } repeat_operator;
+
+        protected:
+
+            // Processing is the act of parsing once according to a given definition
             virtual std::shared_ptr<AST> process(Scanner&, const symbol_table&) = 0;
 
-            // We make this publicly accessible since, during the reading in of the
-            // *.peg file, we need to modify the operators for each definition anyways
-            DEFINITION_REPEAT repeat_operator;
+        private:
+
+            // Utility methods for code cleanliness
+            std::shared_ptr<AST> parseKleeneStar(Scanner&, const symbol_table&);
+            std::shared_ptr<AST> parseKleenePlus(Scanner&, const symbol_table&);
+            std::shared_ptr<AST> parseOptional(Scanner&, const symbol_table&);
+            std::shared_ptr<AST> parseForced(Scanner&, const symbol_table&);
+
     };
 }
 

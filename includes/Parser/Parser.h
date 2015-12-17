@@ -35,7 +35,7 @@ namespace sage
             ~Parser();
 
             // Constructs an AST from stream (usually a file stream)
-            void parse(std::istream&);
+            std::shared_ptr<AST> parse(std::istream&);
 
         private:
 
