@@ -54,14 +54,14 @@ namespace sage
 
             // The input source the scanner will read from
             std::istream& input;
-
-            // Maintain position
             std::stack<ScanState> states;
 
-            // Represents the Regex matching the separator between tokens
-            Regex delimiter;
+            // Utility method to clean @next method
+            std::string tokenize(Regex&, std::stack<unsigned int>&);
 
-            // Used to remove delimiter content between tokens in stream
+            // Represents the Regex matching the separator between tokens
+            // The method is used to remove delimiter content between tokens in stream
+            Regex delimiter;
             void clearDelimiterContent();
 
     };

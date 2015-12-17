@@ -12,10 +12,10 @@ using namespace sage;
  * Constructor
  * ================================
  */
-ScanState::ScanState(long current, unsigned int line, unsigned int column)
-    : cursor(current)
-    , line(line)
-    , column(column)
+ScanState::ScanState(std::istream& stream, unsigned int line, unsigned int column)
+    : cursor(stream.tellg())
+    , line(line), column(column)
+    , buffer_state(stream.rdstate())
 { }
 
 /**
@@ -37,6 +37,11 @@ unsigned int ScanState::getColumn() const
     return column;
 }
 
+std::ios_base::iostate ScanState::getBufferState() const
+{
+    return buffer_state;
+}
+
 /**
  * Advance
  * ================================
@@ -52,4 +57,18 @@ void ScanState::advance(const char c)
     } else {
         column += 1;
     }
+}
+
+/**
+ * Reset
+ * ================================
+ *
+ * This is merely a convenience function to advance the state's position.
+ */
+void ScanState::reset(std::istream& stream, unsigned int n_line, unsigned int n_column)
+{
+    cursor = stream.tellg();
+    buffer_state = stream.rdstate();
+    line = (n_line > -1) ? n_line : line;
+    column = (n_column > -1) ? n_column : column;
 }

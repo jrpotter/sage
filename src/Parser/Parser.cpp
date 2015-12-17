@@ -18,6 +18,8 @@ Parser::Parser(std::string filename)
     if(init_stream.is_open()) {
         Scanner input(init_stream);
         initializeTable(input);
+    } else {
+        throw InvalidGrammar("Invalid filename");
     }
 }
 
@@ -90,8 +92,7 @@ void Parser::initializeTable(Scanner& input)
             input.next(arrowOperator);
 
             // Rest of line is dedicated to definition
-            std::stringstream ss(input.readLine());
-            table[nonterminal] = std::make_shared<Choices>(Scanner(ss));
+            table[nonterminal] = std::make_shared<Choices>(input);
         }
     }
 

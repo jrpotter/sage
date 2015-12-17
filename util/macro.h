@@ -52,6 +52,7 @@
 #define PPARSER_KLEENE_PLUS       '+'
 #define PPARSER_KLEENE_OPTIONAL   '?'
 #define PPARSER_START             '\''
+#define PPARSER_STATEMENT_DELIM   ';'
 #define PPARSER_SUB_START         '('
 #define PPARSER_SUB_END           ')'
 #define PPARSER_TERMINAL_DELIM    '"'

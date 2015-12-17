@@ -54,7 +54,8 @@ Choices::Choices(Scanner& definition)
             }
 
             // Break out of current choice and go back up a level
-            case PPARSER_SUB_END: {
+            case PPARSER_SUB_END:
+            case PPARSER_STATEMENT_DELIM: {
                 return;
             }
 

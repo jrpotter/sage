@@ -13,7 +13,7 @@ using namespace sage;
  */
 Scanner::Scanner(std::istream& input, std::string delimiter)
     : input(input)
-    , states({ ScanState(0, 1, 1) })
+    , states({ ScanState(input, 1, 1) })
     , delimiter(Regex(delimiter))
 {
     // Ensure our token is at the front of the stream
@@ -64,6 +64,48 @@ std::string Scanner::nextWord()
 /**
  * Next
  * ================================
+ *
+ * Workhorse of the scanner class that reads in characters from the input and
+ * tries to match the passed regex.
+ */
+std::string Scanner::next(Regex r)
+{
+    // We manually keep track of the current state and revert if necessary
+    // Note the size of the columns stack will correspond to the number of lines read
+    // during this function call, while the actual values maintains the last column
+    // of the corresponding line read (or the column delta for the first line)
+    std::stack<unsigned int> columns({1});
+    std::string token = tokenize(r, columns);
+    std::string token_copy = token;
+
+    // Work backwards through the string, testing for matches with the largest token possible
+    // We revert the state if necessary, and then save the current state to match the changes accordingly
+    while(!token.empty()) {
+        if(r.matches(token)) {
+            auto nl = states.top().getLine() + static_cast<unsigned int>(columns.size()) - 1;
+            auto nc = columns.top() + (columns.size() == 1) ? states.top().getColumn() : 0;
+            states.top().reset(input, nl, nc);
+            clearDelimiterContent();
+            return token;
+        } else {
+            input.unget();
+            token.pop_back();
+            if(columns.top() == 1) {
+                columns.pop();
+            } else {
+                columns.top() -= 1;
+            }
+        }
+    }
+
+    // Could not find a match, so return error
+    std::string message = "Could not match token " + token_copy + " with Regex";
+    throw ScanException(message, states.top());
+}
+
+/**
+ * Tokenize
+ * ================================
  * Reads in as much of the regex as possible by considering delimited regions.
  * In particular, we break up the input into tokens and then expand upon the
  * token for a proper match.
@@ -71,26 +113,17 @@ std::string Scanner::nextWord()
  * Note we manually check for word boundaries since we are managing a stream
  * and regex verifications are only functional in the contexts of strings.
  */
-
-std::string Scanner::next(Regex r)
+std::string Scanner::tokenize(Regex& r, std::stack<unsigned int>& columns)
 {
-    long cursor = input.tellg();
-
     // If the regex is aligned to match along a word boundary at the front, we should
     // immediately check if we are along a boundary and continue only if this is the case
-    if(r.getFrontWordBounded() && cursor > 0) {
+    if(r.getFrontWordBounded() && input.tellg() > 0) {
+        input.unget();
         Regex whitespace = Regex::fromPool(REGEX_POOL_WHITESPACE, REGEX_EXPR_WHITESPACE);
-        input.seekg(cursor - 1);
         if(!whitespace.matches(std::string(1, static_cast<char>(input.get())))) {
             throw ScanException("Could not align along word boundary", states.top());
         }
     }
-
-    // We manually keep track of the current state and revert if necessary
-    // Note the size of the columns stack will correspond to the number of lines read
-    // during this function call, while the actual values maintains the last column
-    // of the corresponding line read (or the column delta for the first line)
-    std::stack<unsigned int> columns({1});
 
     // Read in input until next separator or end
     // This is necessary to avoid problems regarding the above comment before the function
@@ -98,7 +131,6 @@ std::string Scanner::next(Regex r)
     // token we just read in matches (at least in part) with the passed Regex.
     std::string token;
     while(input.peek() != EOF && !delimiter.matches(std::string(1, (char) input.peek()))) {
-        cursor += 1;
         token += input.get();
         if(token.back() == '\n') {
             columns.push(1);
@@ -109,38 +141,13 @@ std::string Scanner::next(Regex r)
 
     // If we expect an alignment along the back of the string, we simply check if a match occurs
     // since the scanner naturally delimits via word boundaries (i.e. whitespace)
-    std::string token_copy = token;
-    if(r.getBackWordBounded()) {
-        if(r.matches(token)) {
-            return token;
-        }
-
-    // Otherwise we now work backwards through the string, testing for matches with the largest token possible
-    // We revert the state if necessary, and then save the current state to match the changes accordingly
-    } else {
-        while(!token.empty()) {
-            if(r.matches(token)) {
-                unsigned int next_line = states.top().getLine() + (int) columns.size() - 1;
-                unsigned int next_column = (columns.size() == 1) ? states.top().getColumn() + columns.top() : columns.top();
-                states.top() = ScanState(cursor, next_line, next_column);
-                clearDelimiterContent();
-                return token;
-            } else {
-                token.pop_back();
-                input.seekg(--cursor);
-                if(columns.top() == 1) {
-                    columns.pop();
-                } else {
-                    columns.top() -= 1;
-                }
-            }
-        }
+    if(r.getBackWordBounded() && !r.matches(token)) {
+        throw ScanException("Could not align along word boundary", states.top());
     }
 
-    // Could not find a match, so return error
-    std::string message = "Could not match token " + token_copy + " with Regex";
-    throw ScanException(message, states.top());
+    return token;
 }
+
 
 /**
  * Read Line
@@ -231,18 +238,24 @@ char Scanner::peek(int pos)
 /**
  * Checkpoint Methods
  * ================================
+ *
+ * Allows tracking/restoring of stream states.
  */
 void Scanner::saveCheckpoint()
 {
     states.push(states.top());
-    states.top().cursor = input.tellg();
+    states.top().reset(input);
+    auto line = states.top().getLine();
+    auto column = states.top().getColumn();
+    states.push(ScanState(input, line, column));
 }
 
 ScanState Scanner::restoreCheckpoint()
 {
     ScanState top = states.top();
     states.pop();
-    input.seekg(states.top().cursor);
+    input.clear(states.top().getBufferState());
+    input.seekg(states.top().getCursor());
     return top;
 }
 

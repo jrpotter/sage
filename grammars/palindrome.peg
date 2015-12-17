@@ -1,0 +1,49 @@
+# This is a sample PEG that matches valid palindromes.
+# Its purpose is to provide an example of how PEGs should be constructed
+# for use by Sage.
+#
+# Nonterminals are placed on the left side of the arrow ('->') operator
+# and are substituted on the right side of the arrow if the name of the
+# nonterminal is used.
+#
+# Use the apostrophe ('\'') character to denote the starting nonterminal.
+#
+# Provide multiple definitions for a nonterminal via the choice operator
+# ('|'). Note each option is tried in order, and will stop once a successful
+# match has been encountered. We must use two pipe operators to distinguish
+# from a single pipe used in a regex. Thus expressions like:
+#
+# Example -> Example | "[1-9]"
+#
+# will fail since each time Example is induced, it will look again into Example.
+#
+# Ref: https://en.wikipedia.org/wiki/Parsing_expression_grammar
+
+Palindrome' -> "a" Palindrome "a"
+             | "b" Palindrome "b"
+             | "c" Palindrome "c"
+             | "d" Palindrome "d"
+             | "e" Palindrome "e"
+             | "f" Palindrome "f"
+             | "g" Palindrome "g"
+             | "h" Palindrome "h"
+             | "i" Palindrome "i"
+             | "j" Palindrome "j"
+             | "k" Palindrome "k"
+             | "l" Palindrome "l"
+             | "m" Palindrome "m"
+             | "n" Palindrome "n"
+             | "o" Palindrome "o"
+             | "p" Palindrome "p"
+             | "q" Palindrome "q"
+             | "r" Palindrome "r"
+             | "s" Palindrome "s"
+             | "t" Palindrome "t"
+             | "u" Palindrome "u"
+             | "v" Palindrome "v"
+             | "w" Palindrome "w"
+             | "x" Palindrome "x"
+             | "y" Palindrome "y"
+             | "z" Palindrome "z"
+             | "[a-z]"
+             ;
