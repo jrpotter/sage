@@ -1,10 +1,10 @@
 Sage
 ====
 
-[Version 0.0.1 - 12/15/2015]
+[Version 1.0.0 - 12/15/2015]
 
-Sage is a packrat PEG parser I created for the intents of building my own language, Guru. It is still in the works but is
-nearing completition and provides the framework needed to parse arbitrary PEG grammars.
+Sage is a packrat PEG parser I created for the intents of building my own language. It provides support for parsing
+generic PEG grammars (some examples included in the /grammars folder).
 
 Features
 --------
@@ -18,7 +18,24 @@ Features
   * Allows for reading in delimited tokens (and not if not word bounded)
 * PEG Parsing
   * By using the PEGParser class, one can construct a PEG parser from a .peg file
-  * Can then begin parsing an arbitrary file according to this grammar, returning an AST (in progress)
+  * Can then begin parsing an arbitrary file according to this grammar, returning an AST
+
+Limitations
+-----------
+
+This is primarily an experimental project, and I believe I've run the course of the experiment, especially after
+studying up on unicode functionality. Provided are some of the limitations of Sage if you decide to play with it:
+
+* Unicode Support
+  * While I could perhaps look into getting this running, it would be an insane amount of work to try and compete against
+    something like ICU or Boost.Locale. And if I were to settle with either of these libraries, I might as well use their
+    corresponding regex libraries as well (which also supports unicode).
+* Contextual Analysis
+  * I would like to incorporate some means of declaring types within the PEG file so that Sage can perform the contextual
+    analysis but its not something I'm too excited about jumping on quite yet.
+* Scanning
+  * If a language is whitespace delimited (something like Python), the provided Scanner provides very limited support for
+    this.
 
 Example
 -------
